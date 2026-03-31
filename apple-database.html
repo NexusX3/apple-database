@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Apple 產品資料庫</title>
+  <style>
+    /* ── Theme Variables ── */
+    :root {
+      --bg:        #ffffff;
+      --bg2:       #f5f5f7;
+      --card:      #ffffff;
+      --text:      #1d1d1f;
+      --sub:       #6e6e73;
+      --accent:    #0071e3;
+      --accentH:   #0077ed;
+      --border:    #d2d2d7;
+      --navbg:     rgba(255,255,255,0.88);
+      --shadow:    rgba(0,0,0,0.08);
+      --tag:       #e8e8ed;
+      --hl:        #e8f2ff;
+    }
+    [data-theme="dark"] {
+      --bg:        #000000;
+      --bg2:       #1c1c1e;
+      --card:      #2c2c2e;
+      --text:      #f5f5f7;
+      --sub:       #98989d;
+      --accent:    #2997ff;
+      --accentH:   #5aadff;
+      --border:    #3a3a3c;
+      --navbg:     rgba(0,0,0,0.88);
+      --shadow:    rgba(0,0,0,0.5);
+      --tag:       #3a3a3c;
+      --hl:        #0a1f38;
+    }
+
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: background .3s, color .3s;
+      min-height: 100vh;
+      padding-bottom: calc(80px + env(safe-area-inset-bottom));
+    }
+
+    /* ── Top Header ── */
+    header {
+      position: sticky; top: 0; z-index: 200;
+      background: var(--navbg);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 18px;
+    }
+    .hd-logo { display: flex; align-items: center; gap: 9px; }
+    .hd-logo svg { width: 20px; height: 20px; fill: var(--text); }
+    .hd-title { font-size: 16px; font-weight: 700; letter-spacing: -.3px; }
+    .theme-btn {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 20px; padding: 6px 14px;
+      font-size: 13px; color: var(--text); cursor: pointer;
+      transition: background .2s;
+    }
+
+    /* ── Bottom Nav ── */
+    .bnav {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+      background: var(--navbg);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .bnav-item {
+      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+      padding: 8px 0; cursor: pointer;
+      color: var(--sub); font-size: 10px; font-weight: 500;
+      transition: color .2s;
+    }
+    .bnav-item .ni { font-size: 22px; line-height: 1; }
+    .bnav-item.active { color: var(--accent); }
+
+    /* ── Main Layout ── */
+    main { max-width: 720px; margin: 0 auto; padding: 16px; }
+    .section { display: none; }
+    .section.active { display: block; }
+    .sec-title { font-size: 26px; font-weight: 800; letter-spacing: -.5px; margin-bottom: 18px; }
+
+    /* ── Search Bar ── */
+    .sbar { position: relative; margin-bottom: 14px; }
+    .sbar input {
+      width: 100%; padding: 12px 16px 12px 42px;
+      border-radius: 13px; border: 1px solid var(--border);
+      background: var(--bg2); color: var(--text); font-size: 15px; outline: none;
+      transition: border-color .2s;
+    }
+    .sbar input:focus { border-color: var(--accent); }
+    .sbar .si { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 16px; }
+
+    /* ── Category Chips ── */
+    .chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 14px; scrollbar-width: none; }
+    .chips::-webkit-scrollbar { display: none; }
+    .chip {
+      white-space: nowrap; padding: 7px 16px;
+      border-radius: 20px; border: 1px solid var(--border);
+      background: var(--card); color: var(--text); font-size: 13px;
+      font-weight: 500; cursor: pointer; transition: all .2s;
+    }
+    .chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* ── Product Grid ── */
+    .pgrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .pcard {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 18px; padding: 18px 14px; cursor: pointer;
+      box-shadow: 0 2px 10px var(--shadow);
+      transition: transform .18s, box-shadow .18s;
+    }
+    .pcard:hover { transform: translateY(-2px); box-shadow: 0 6px 18px var(--shadow); }
+    .pcard:active { transform: scale(.97); }
+    .pc-emoji { font-size: 40px; margin-bottom: 10px; }
+    .pc-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .pc-tag { font-size: 11px; color: var(--sub); line-height: 1.5; }
+    .pc-price { font-size: 12px; color: var(--accent); font-weight: 600; margin-top: 6px; }
+
+    /* ── Product Detail ── */
+    .pdetail { display: none; }
+    .pdetail.active { display: block; }
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      color: var(--accent); font-size: 15px; font-weight: 500;
+      cursor: pointer; margin-bottom: 18px;
+    }
+    .hero {
+      background: linear-gradient(145deg, var(--bg2), var(--card));
+      border: 1px solid var(--border);
+      border-radius: 22px; padding: 28px 22px; text-align: center; margin-bottom: 18px;
+    }
+    .hero-em { font-size: 76px; margin-bottom: 10px; }
+    .hero-name { font-size: 28px; font-weight: 800; letter-spacing: -.5px; }
+    .hero-price { font-size: 22px; font-weight: 700; color: var(--accent); margin: 6px 0; }
+    .hero-desc { font-size: 14px; color: var(--sub); line-height: 1.65; max-width: 480px; margin: 0 auto; }
+
+    /* ── Accordion ── */
+    .acc { border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 10px; }
+    .acc-hd {
+      padding: 15px 16px; display: flex; justify-content: space-between; align-items: center;
+      cursor: pointer; background: var(--card); font-size: 15px; font-weight: 600;
+      transition: background .2s; user-select: none;
+    }
+    .acc-hd:active { background: var(--bg2); }
+    .arr { transition: transform .3s; color: var(--sub); font-size: 13px; }
+    .acc.open .arr { transform: rotate(180deg); }
+    .acc-body {
+      display: none; padding: 14px 16px;
+      background: var(--bg2); border-top: 1px solid var(--border);
+      font-size: 14px; line-height: 1.7; color: var(--sub);
+    }
+    .acc.open .acc-body { display: block; }
+
+    /* ── Feature Tags ── */
+    .ftags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .ftag {
+      background: var(--tag); color: var(--text);
+      padding: 5px 13px; border-radius: 20px; font-size: 12px; font-weight: 500;
+    }
+
+    /* ── Specs Table ── */
+    .stbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .stbl tr { border-bottom: 1px solid var(--border); }
+    .stbl tr:last-child { border-bottom: none; }
+    .stbl td { padding: 10px 4px; vertical-align: top; }
+    .stbl td:first-child { color: var(--sub); width: 42%; font-weight: 500; }
+
+    /* ── Feature Section ── */
+    .feat-hd-wrap > div:first-child { font-size: 16px; font-weight: 700; }
+    .feat-sub { font-size: 11px; font-weight: 400; color: var(--sub); margin-top: 2px; }
+    .feat-item { margin-bottom: 10px; }
+    .feat-item-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+    .feat-item-desc { font-size: 12px; color: var(--sub); line-height: 1.6; }
+    .dev-badges { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+    .dbadge {
+      background: var(--card); border: 1px solid var(--border);
+      padding: 4px 10px; border-radius: 8px; font-size: 11px; color: var(--sub);
+    }
+
+    /* ── Trouble Section ── */
+    .tcat-label {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--hl); color: var(--accent);
+      padding: 7px 13px; border-radius: 9px; font-size: 13px; font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .steps { list-style: none; counter-reset: sc; }
+    .steps li {
+      counter-increment: sc; display: flex; align-items: flex-start; gap: 10px;
+      margin-bottom: 9px; font-size: 13px; line-height: 1.65;
+    }
+    .steps li::before {
+      content: counter(sc);
+      background: var(--accent); color: #fff;
+      min-width: 20px; height: 20px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 2px;
+    }
+
+    /* ── Compare Section ── */
+    .cbox {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 16px; margin-bottom: 16px;
+    }
+    .cbox-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+    .cchips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .cchip {
+      background: var(--tag); border: 2px solid transparent;
+      border-radius: 20px; padding: 7px 15px; font-size: 13px;
+      cursor: pointer; transition: all .2s; color: var(--text);
+    }
+    .cchip.selected { border-color: var(--accent); background: var(--hl); color: var(--accent); font-weight: 600; }
+    .cmp-btn {
+      width: 100%; margin-top: 14px;
+      background: var(--accent); color: #fff; border: none;
+      border-radius: 13px; padding: 14px; font-size: 15px; font-weight: 700;
+      cursor: pointer; transition: background .2s;
+    }
+    .cmp-btn:hover { background: var(--accentH); }
+    .cmp-btn:disabled { background: var(--border); color: var(--sub); cursor: default; }
+
+    /* ── Compare Table ── */
+    .cresult { display: none; margin-bottom: 20px; }
+    .cresult.show { display: block; }
+    .ctbl-wrap { overflow-x: auto; border-radius: 14px; border: 1px solid var(--border); }
+    .ctbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .ctbl th {
+      background: var(--bg2); padding: 12px 9px; text-align: center;
+      font-weight: 700; border-bottom: 2px solid var(--border); font-size: 13px;
+    }
+    .ctbl th:first-child { text-align: left; }
+    .ctbl td { padding: 10px 9px; border-bottom: 1px solid var(--border); vertical-align: top; text-align: center; line-height: 1.5; }
+    .ctbl td:first-child { text-align: left; font-weight: 600; background: var(--bg2); color: var(--sub); font-size: 12px; }
+    .ctbl tr:last-child td { border-bottom: none; }
+    .ctbl-em { font-size: 22px; display: block; margin-bottom: 4px; }
+
+    /* ── No-results ── */
+    .nores { text-align: center; color: var(--sub); padding: 40px 0; font-size: 14px; }
+
+    /* ── Add-to-compare CTA ── */
+    .atc-wrap { text-align: center; margin-top: 18px; padding: 14px; background: var(--bg2); border-radius: 14px; }
+    .atc-hint { font-size: 12px; color: var(--sub); margin-bottom: 8px; }
+    .atc-btn {
+      background: var(--accent); color: #fff; border: none;
+      border-radius: 12px; padding: 11px 26px; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: background .2s;
+    }
+    .atc-btn:hover { background: var(--accentH); }
+
+    /* ── Responsive ── */
+    @media (max-width: 380px) {
+      .pgrid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─────────── HEADER ─────────── -->
+<header>
+  <div class="hd-logo">
+    <svg viewBox="0 0 814 1000"><path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-57.8-155.5-127.4C46 680.5 0 546.8 0 416.2c0-217.7 141.4-333.2 280.3-333.2 74.9 0 137.2 49.9 184.4 49.9 44.9 0 115.7-52.6 199.2-52.6 31.9 0 108.2 2.6 168.6 75.8zm-84.7-221.1c31.9-38.5 53.9-92.4 53.9-146.3 0-7.4-.6-15.5-1.9-22.3-51.3 1.9-112.3 34.4-148.4 75.8-28.8 33.2-56.3 87.1-56.3 141.9 0 8.4 1.3 16.7 1.9 19.4 3.2.6 8.4 1.3 13.5 1.3 46.2 0 101.1-30.7 137.3-69.8z"/></svg>
+    <span class="hd-title">Apple 產品資料庫</span>
+  </div>
+  <button class="theme-btn" onclick="toggleTheme()">
+    <span id="ticon">🌙</span><span id="ttxt">深色</span>
+  </button>
+</header>
+
+<!-- ─────────── MAIN ─────────── -->
+<main>
+
+  <!-- ① 產品介紹 -->
+  <div class="section active" id="s-products">
+    <div id="pl-wrap">
+      <h1 class="sec-title">產品介紹</h1>
+      <div class="sbar"><span class="si">🔍</span><input type="text" id="psearch" placeholder="搜尋產品…" oninput="filterP()"></div>
+      <div class="chips" id="pcats">
+        <div class="chip active" onclick="setPcat('all',this)">全部</div>
+        <div class="chip" onclick="setPcat('iPhone',this)">iPhone</div>
+        <div class="chip" onclick="setPcat('iPad',this)">iPad</div>
+        <div class="chip" onclick="setPcat('Mac',this)">Mac</div>
+        <div class="chip" onclick="setPcat('Watch',this)">Watch</div>
+        <div class="chip" onclick="setPcat('Audio',this)">Audio</div>
+        <div class="chip" onclick="setPcat('TV',this)">TV &amp; Home</div>
+      </div>
+      <div class="pgrid" id="pgrid"></div>
+    </div>
+    <div class="pdetail" id="pdetail">
+      <div class="back-btn" onclick="backToList()">‹ 返回產品列表</div>
+      <div id="pdetail-body"></div>
+    </div>
+  </div>
+
+  <!-- ② 功能說明 -->
+  <div class="section" id="s-features">
+    <h1 class="sec-title">功能說明</h1>
+    <div class="chips" id="fcats">
+      <div class="chip active" onclick="setFcat('all',this)">全部功能</div>
+      <div class="chip" onclick="setFcat('ai',this)">AI 智慧</div>
+      <div class="chip" onclick="setFcat('camera',this)">相機</div>
+      <div class="chip" onclick="setFcat('chip',this)">晶片</div>
+      <div class="chip" onclick="setFcat('connect',this)">連線</div>
+      <div class="chip" onclick="setFcat('health',this)">健康</div>
+    </div>
+    <div id="feat-body"></div>
+  </div>
+
+  <!-- ③ 故障排除 -->
+  <div class="section" id="s-trouble">
+    <h1 class="sec-title">故障排除</h1>
+    <div class="sbar"><span class="si">🔍</span><input type="text" id="tsearch" placeholder="搜尋問題或裝置…" oninput="filterT()"></div>
+    <div id="trouble-body"></div>
+  </div>
+
+  <!-- ④ 規格比較 -->
+  <div class="section" id="s-specs">
+    <h1 class="sec-title">規格比較</h1>
+    <div class="cbox">
+      <div class="cbox-title">📊 選擇 2–3 個產品進行比較</div>
+      <div class="cchips" id="cchips"></div>
+      <button class="cmp-btn" id="cmp-btn" onclick="runCompare()" disabled>請先選擇產品</button>
+    </div>
+    <div class="cresult" id="cresult"><div id="ctbl-body"></div></div>
+    <div id="specs-all"></div>
+  </div>
+
+</main>
+
+<!-- ─────────── BOTTOM NAV ─────────── -->
+<nav class="bnav">
+  <div class="bnav-item active" onclick="gotoSec('products',this)"><span class="ni">📱</span>產品</div>
+  <div class="bnav-item"       onclick="gotoSec('features',this)"><span class="ni">⚡</span>功能</div>
+  <div class="bnav-item"       onclick="gotoSec('trouble',this)"><span class="ni">🔧</span>排除</div>
+  <div class="bnav-item"       onclick="gotoSec('specs',this)"><span class="ni">📊</span>規格</div>
+</nav>
+
+<!-- ─────────── DATA ─────────── -->
+<script>
+/* ===================== DATA ===================== */
+const PRODUCTS = [
+  {
+    id:'ip16pro', name:'iPhone 16 Pro', cat:'iPhone', emoji:'📱',
+    tagline:'鈦金屬。頂尖。巔峰。', price:'NT$39,900 起',
+    desc:'iPhone 16 Pro 採用航太級鈦金屬設計，搭載 A18 Pro 晶片，帶來突破性的拍攝體驗與 Apple Intelligence 智慧功能。',
+    feats:['A18 Pro 晶片','48MP 攝影系統','相機控制鈕','Apple Intelligence','鈦金屬機身','USB 3','5x 光學變焦','4K 120fps ProRes'],
+    specs:{'顯示器':'6.3 吋 Super Retina XDR OLED (ProMotion 120Hz)','解析度':'2622 × 1206 @ 460 ppi','晶片':'Apple A18 Pro (6核CPU + 6核GPU)','主相機':'48MP Fusion f/1.78','超廣角':'48MP f/2.2','望遠':'12MP 5× 光學變焦','電池':'最長 27 小時影片播放','儲存空間':'256GB / 512GB / 1TB','作業系統':'iOS 18','防水':'IP68（6m / 30min）','連線':'5G、Wi-Fi 7、藍牙 5.3、UWB','重量':'227 公克'}
+  },
+  {
+    id:'ip16', name:'iPhone 16', cat:'iPhone', emoji:'📱',
+    tagline:'為 Apple Intelligence 而生', price:'NT$29,900 起',
+    desc:'iPhone 16 全新搭載 A18 晶片與相機控制鈕，讓你以前所未有的方式拍照錄影，並完整支援 Apple Intelligence。',
+    feats:['A18 晶片','相機控制鈕','48MP 相機','Action 按鈕','USB-C','Apple Intelligence'],
+    specs:{'顯示器':'6.1 吋 Super Retina XDR OLED','解析度':'2556 × 1179 @ 460 ppi','晶片':'Apple A18 (6核CPU)','主相機':'48MP Fusion f/1.6','超廣角':'12MP f/2.2','望遠':'無','電池':'最長 22 小時影片播放','儲存空間':'128GB / 256GB / 512GB','作業系統':'iOS 18','防水':'IP68（6m / 30min）','連線':'5G、Wi-Fi 7、藍牙 5.3','重量':'170 公克'}
+  },
+  {
+    id:'ip16pm', name:'iPhone 16 Plus', cat:'iPhone', emoji:'📱',
+    tagline:'更大螢幕。更長電池。', price:'NT$34,900 起',
+    desc:'iPhone 16 Plus 擁有 6.7 吋大螢幕，搭載 A18 晶片，提供長達 26 小時的超長電池續航力。',
+    feats:['A18 晶片','6.7 吋大螢幕','Action 按鈕','相機控制鈕','USB-C','26hr 電池'],
+    specs:{'顯示器':'6.7 吋 Super Retina XDR OLED','解析度':'2796 × 1290 @ 460 ppi','晶片':'Apple A18','主相機':'48MP Fusion f/1.6','超廣角':'12MP f/2.2','電池':'最長 26 小時影片播放','儲存空間':'128GB / 256GB / 512GB','作業系統':'iOS 18','防水':'IP68（6m / 30min）','連線':'5G、Wi-Fi 7、藍牙 5.3','重量':'203 公克'}
+  },
+  {
+    id:'ipadpro', name:'iPad Pro M4', cat:'iPad', emoji:'🖥️',
+    tagline:'超薄。超強。超越想像。', price:'NT$31,900 起',
+    desc:'iPad Pro 搭載 M4 晶片，配備 Ultra Retina XDR OLED 顯示器，是史上最薄的 Apple 產品，僅 5.1mm。',
+    feats:['M4 晶片','Ultra Retina XDR OLED','Apple Pencil Pro','Magic Keyboard','Tandem OLED','Thunderbolt 4'],
+    specs:{'顯示器':'11 / 13 吋 Ultra Retina XDR OLED','晶片':'Apple M4 (10核CPU + 10核GPU)','前置相機':'12MP 超廣角','後置相機':'12MP 超廣角','電池':'最長 10 小時','儲存空間':'256GB / 512GB / 1TB / 2TB','作業系統':'iPadOS 18','防水':'IP68','連線':'Wi-Fi 6E、藍牙 5.3','重量':'444公克（11吋 Wi-Fi）','厚度':'5.1mm（超薄機型）'}
+  },
+  {
+    id:'ipadair', name:'iPad Air M2', cat:'iPad', emoji:'🖥️',
+    tagline:'輕盈強大。更值得擁有。', price:'NT$19,900 起',
+    desc:'iPad Air 搭載 M2 晶片，提供出色的效能與輕盈設計，支援 Apple Pencil Pro 與 Magic Keyboard。',
+    feats:['M2 晶片','11 / 13 吋選擇','Apple Pencil Pro','USB-C','Wi-Fi 6E','前置橫向鏡頭'],
+    specs:{'顯示器':'11 / 13 吋 Liquid Retina','晶片':'Apple M2 (8核CPU)','前置相機':'12MP 超廣角（橫向）','後置相機':'12MP 超廣角','電池':'最長 10 小時','儲存空間':'128GB / 256GB / 512GB / 1TB','作業系統':'iPadOS 18','連線':'Wi-Fi 6E、藍牙 5.3','重量':'462公克（11吋 Wi-Fi）'}
+  },
+  {
+    id:'mbpro', name:'MacBook Pro M4', cat:'Mac', emoji:'💻',
+    tagline:'怪獸級效能。超長續航。', price:'NT$59,900 起',
+    desc:'MacBook Pro 搭載 M4、M4 Pro 或 M4 Max 晶片，配備 Liquid Retina XDR 顯示器，是效能與創意工作的完美結合。',
+    feats:['M4 / M4 Pro / M4 Max','Liquid Retina XDR','24GB 起統一記憶體','MagSafe 充電','ProMotion 120Hz','六揚聲器音效'],
+    specs:{'顯示器':'14 / 16 吋 Liquid Retina XDR (120Hz)','晶片':'Apple M4 / M4 Pro / M4 Max','記憶體':'24GB / 32GB / 48GB / 64GB / 128GB','儲存空間':'512GB – 8TB','電池':'最長 24 小時（M4 Pro 16吋）','連接埠':'Thunderbolt 4 ×3、HDMI、SD卡、MagSafe','相機':'12MP Center Stage','連線':'Wi-Fi 6E、藍牙 5.3','作業系統':'macOS Sequoia','重量':'1.6 公斤（14吋）'}
+  },
+  {
+    id:'mbair', name:'MacBook Air M3', cat:'Mac', emoji:'💻',
+    tagline:'飛快。輕薄。更勝以往。', price:'NT$36,900 起',
+    desc:'MacBook Air 是全球最熱銷的筆電，採用無風扇設計，13 或 15 吋任選，支援 Apple Intelligence。',
+    feats:['M3 晶片','最長 18 小時電池','1080p 鏡頭','MagSafe 充電','無風扇','Apple Intelligence'],
+    specs:{'顯示器':'13.6 / 15.3 吋 Liquid Retina','晶片':'Apple M3 (8核CPU + 10核GPU)','記憶體':'8GB / 16GB / 24GB','儲存空間':'256GB / 512GB / 1TB / 2TB','電池':'最長 18 小時','連接埠':'Thunderbolt 3 ×2、MagSafe','相機':'1080p FaceTime HD','連線':'Wi-Fi 6E、藍牙 5.3','作業系統':'macOS Sequoia','重量':'1.24 公斤（13吋）','厚度':'11.3mm'}
+  },
+  {
+    id:'watch10', name:'Apple Watch S10', cat:'Watch', emoji:'⌚',
+    tagline:'更輕。更薄。更有感。', price:'NT$12,900 起',
+    desc:'Apple Watch Series 10 是史上最大、最薄的 Apple Watch，可偵測睡眠呼吸中止症，充電速度最快。',
+    feats:['睡眠呼吸中止症偵測','最大最薄錶面','快速充電','水深計','血氧感測','心電圖'],
+    specs:{'尺寸':'42mm / 46mm','顯示器':'Always-On Retina LTPO OLED','晶片':'S10 SiP','電池':'最長 18 小時（標準） / 36小時（低電量）','防水':'50公尺（WR50）','感測器':'心率、血氧、心電圖、水深計、體溫','作業系統':'watchOS 11','連線':'Wi-Fi、藍牙 5.3、UWB、LTE（選配）','重量':'36.4公克（46mm 鋁）'}
+  },
+  {
+    id:'airpods2', name:'AirPods Pro 2', cat:'Audio', emoji:'🎧',
+    tagline:'主動降噪。個人化空間音訊。', price:'NT$7,990 起',
+    desc:'AirPods Pro（第 2 代）搭載 H2 晶片，帶來自適應音訊、個人化空間音訊與業界領先的主動降噪體驗。',
+    feats:['H2 晶片','自適應音訊','個人化空間音訊','主動降噪','通透模式','USB-C 充電盒'],
+    specs:{'晶片':'Apple H2','耳機電池':'6 小時（ANC 開啟）/ 7.5 小時（ANC 關閉）','含充電盒電池':'最長 30 小時','防水':'IPX4（耳機與充電盒）','連線':'藍牙 5.3','充電':'USB-C、MagSafe、Qi','音訊':'個人化空間音訊、Dolby Atmos','感測器':'肌膚偵測、運動偵測、語音偵測'}
+  },
+  {
+    id:'appletv', name:'Apple TV 4K', cat:'TV', emoji:'📺',
+    tagline:'強大到讓你大開眼界。', price:'NT$4,290 起',
+    desc:'Apple TV 4K 搭載 A15 Bionic，支援 4K Dolby Vision HDR 影片與 Dolby Atmos 音效，並完整整合 HomeKit。',
+    feats:['A15 Bionic 晶片','4K Dolby Vision','Dolby Atmos','Siri 遙控器','HomeKit 整合','Apple Arcade'],
+    specs:{'晶片':'Apple A15 Bionic','儲存空間':'64GB / 128GB','影片':'4K HDR、Dolby Vision、HDR10+','音訊':'Dolby Atmos、空間音訊','連線':'Wi-Fi 6、藍牙 5.0、乙太網路（選配）','連接埠':'HDMI 2.1、USB-C','遙控器':'Siri 遙控器（觸控板）','作業系統':'tvOS 18'}
+  },
+];
+
+const FEATURES = [
+  {
+    id:'ai', cat:'ai', title:'🤖 Apple Intelligence', sub:'AI 加持的個人智慧',
+    desc:'Apple Intelligence 是深度整合於 iPhone、iPad、Mac 的個人智慧系統，運用生成式模型並結合個人情境，讓裝置更懂你。',
+    items:[
+      {n:'書寫工具', d:'重寫、校稿、摘要任何文字，跨 App 一鍵使用。'},
+      {n:'照片記憶影片', d:'根據你的描述，自動製作個性化回憶影片。'},
+      {n:'優先通知', d:'智慧整理通知佇列，最重要的訊息優先顯示。'},
+      {n:'進化版 Siri', d:'Siri 能理解上下文，並深度整合 App 內操作。'},
+      {n:'ChatGPT 整合', d:'透過 Siri 直接使用 ChatGPT，無需切換 App。'},
+    ],
+    devices:['iPhone 16 系列','iPhone 15 Pro / Pro Max','iPad（M 系列晶片）','Mac（M 系列晶片）'],
+  },
+  {
+    id:'cam', cat:'camera', title:'📷 相機系統', sub:'Pro 等級的拍攝體驗',
+    desc:'Apple 計算攝影持續進化，從 48MP 多鏡頭系統到 4K Dolby Vision 錄影，帶來媲美專業相機的影像品質。',
+    items:[
+      {n:'相機控制鈕', d:'iPhone 16 系列專屬實體按鈕，可快速拍照、錄影、調整焦距與曝光。'},
+      {n:'Photonic Engine', d:'深度融合計算攝影，大幅提升低光源與動態場景品質。'},
+      {n:'4K 120fps Dolby Vision', d:'iPhone 16 Pro 可錄製電影等級的 4K 慢動作影片。'},
+      {n:'ProRAW & ProRes', d:'為攝影師與影片創作者提供最大後製彈性。'},
+      {n:'空間影片', d:'拍攝可在 Apple Vision Pro 觀看的 3D 空間影片。'},
+    ],
+    devices:['iPhone 16 系列','iPhone 16 Pro / Pro Max'],
+  },
+  {
+    id:'m4', cat:'chip', title:'💎 Apple M4 晶片', sub:'專為 AI 時代設計',
+    desc:'M4 採用 3nm 製程，搭載第二代 Neural Engine，每秒可執行 38 兆次運算，效能大幅領先同級競品。',
+    items:[
+      {n:'10 核心 CPU', d:'4 個效能核心 + 6 個效率核心，整體效能提升達 50%。'},
+      {n:'10 核心 GPU', d:'圖形效能大幅提升，並支援硬體光線追蹤。'},
+      {n:'38 TOPS Neural Engine', d:'第二代 Neural Engine，AI 推論速度飛快。'},
+      {n:'統一記憶體架構', d:'CPU、GPU、Neural Engine 共用記憶體池，減少延遲。'},
+      {n:'超長電池', d:'MacBook Pro M4 Pro 最長可達 24 小時電池續航。'},
+    ],
+    devices:['iPad Pro M4','MacBook Pro M4','iMac M4','Mac mini M4'],
+  },
+  {
+    id:'cont', cat:'connect', title:'🔗 接續互通', sub:'跨裝置無縫體驗',
+    desc:'接續互通讓所有 Apple 裝置如同一體，在不同裝置間無縫切換工作流程，大幅提升生產力。',
+    items:[
+      {n:'Handoff', d:'在 iPhone 開始的任務，可無縫在 Mac 或 iPad 接續。'},
+      {n:'AirDrop', d:'超快速點對點傳輸，支援各種檔案類型。'},
+      {n:'通用剪貼板', d:'在 iPhone 複製，在 Mac 貼上，雙向皆可。'},
+      {n:'接續鏡頭', d:'以 iPhone 相機作為 Mac 網路攝影機，畫質遠勝內建。'},
+      {n:'iPhone 鏡像輸出', d:'在 Mac 螢幕上直接顯示並操控 iPhone。'},
+    ],
+    devices:['需搭配多台 Apple 裝置','需開啟 iCloud 及藍牙'],
+  },
+  {
+    id:'hlth', cat:'health', title:'❤️ 健康功能', sub:'你的個人健康守護者',
+    desc:'Apple Watch 搭載多種先進感測器，與 iPhone 健康 App 深度整合，全方位守護你每天的健康狀況。',
+    items:[
+      {n:'睡眠呼吸中止症偵測', d:'Series 9/10 及 Ultra 2 可偵測睡眠呼吸中止症跡象。'},
+      {n:'心電圖（ECG）', d:'即時偵測心房顫動，可匯出 PDF 分享給醫師。'},
+      {n:'血氧監測', d:'全天候監測血氧飽和度（SpO₂）。'},
+      {n:'碰撞偵測', d:'偵測嚴重車禍後自動撥打緊急電話。'},
+      {n:'女性健康追蹤', d:'週期追蹤、受孕機率預測、孕期健康追蹤。'},
+    ],
+    devices:['Apple Watch Series 9 / 10','Apple Watch Ultra 2','iPhone（搭配健康 App）'],
+  },
+];
+
+const TROUBLES = [
+  {
+    id:'t1', prod:'iPhone', emoji:'🔋', title:'電池耗電過快',
+    steps:['前往「設定」→「電池」，查看電池健康度與各 App 耗電比例。','關閉不必要的背景 App 重新整理（設定→一般→背景 App 重新整理）。','降低螢幕亮度，或確認「自動亮度調節」已開啟（設定→輔助使用→顯示與文字大小）。','關閉不使用的定位服務（設定→隱私權→定位服務）。','開啟「低電量模式」（設定→電池→低電量模式）以延長續航。','若電池健康度低於 80%，建議至 Apple Store 更換電池。'],
+  },
+  {
+    id:'t2', prod:'iPhone', emoji:'📡', title:'Wi-Fi 連線不穩或斷線',
+    steps:['嘗試關閉 Wi-Fi 後重新開啟（設定→Wi-Fi）。','忘記目前網路並重新輸入密碼連線（點選網路名稱旁 ⓘ → 忘記此網路）。','重新啟動 iPhone（長按側邊鍵 + 任一音量鍵）。','重設網路設定（設定→一般→傳輸或重置→重置→重置網路設定）。','確認路由器韌體為最新版本，並重新啟動路由器。','若問題持續，聯絡 Apple 支援或造訪 Apple Store。'],
+  },
+  {
+    id:'t3', prod:'iPhone', emoji:'👤', title:'Face ID 無法辨識',
+    steps:['確認臉部未被遮蔽（口罩、墨鏡、帽子等）。','清潔 iPhone 頂部的 TrueDepth 相機區域。','前往「設定」→「Face ID 與密碼」→ 重新設定 Face ID。','確認保護殼未遮擋 TrueDepth 相機（瀏海或動態島區域）。','可啟用「配戴口罩使用 Face ID」功能（iOS 15.4 以上）。','若仍無法使用，可能為硬體問題，請至 Apple Store 檢測。'],
+  },
+  {
+    id:'t4', prod:'iPhone', emoji:'🔇', title:'揚聲器無聲音或聲音微弱',
+    steps:['確認手機未進入靜音模式（左側撥片）。','前往「設定」→「聲音與觸覺反應」，確認音量已調高。','確認揚聲器孔沒有被異物堵塞，可用軟毛刷輕輕清潔。','重新啟動 iPhone。','在安全模式下測試，以排除第三方 App 衝突。','若仍無聲音，可能為硬體損壞，請聯絡 Apple 支援。'],
+  },
+  {
+    id:'t5', prod:'Mac', emoji:'🐌', title:'Mac 運行速度緩慢',
+    steps:['重新啟動 Mac（Apple 選單→重新啟動）。','開啟「活動監視器」，查看佔用 CPU 或記憶體最多的程序並結束。','清理桌面：過多圖示會影響效能，整理至資料夾。','確認儲存空間至少保留 10% 可用空間（Apple 選單→關於這台 Mac→儲存空間）。','關閉開機自動啟動 App（系統設定→一般→登入項目）。','若問題持續，嘗試重新安裝 macOS（Recovery 模式）。'],
+  },
+  {
+    id:'t6', prod:'Mac', emoji:'❄️', title:'Mac 應用程式無回應（轉圈圈）',
+    steps:['等待約 30 秒讓 App 自行恢復，有時是暫時性載入。','使用強制結束（Command+Option+Escape）→ 選擇無回應的 App → 強制結束。','重新啟動 Mac 後再開啟該 App。','確認 App 為最新版本（App Store→更新項目）。','刪除並重新安裝問題 App。','若問題固定發生，可能是 App 相容性問題，聯絡開發者或 Apple 支援。'],
+  },
+  {
+    id:'t7', prod:'iPad', emoji:'✏️', title:'Apple Pencil 無法連接',
+    steps:['確認 Pencil 已充電（第1代插入 Lightning；第2代吸附 iPad 側邊；Pro 版吸附磁性充電區）。','前往「設定」→「藍牙」，確認 Pencil 是否顯示為已連線。','若未連線，嘗試移除配對後重新連接。','重新啟動 iPad。','確認 Apple Pencil 型號與 iPad 型號相容（查看 Apple 官網相容性表）。','若仍無法使用，Pencil 可能需要維修，請聯絡 Apple 支援。'],
+  },
+  {
+    id:'t8', prod:'全系列', emoji:'📤', title:'AirDrop 無法傳送或接收',
+    steps:['確認雙方裝置皆已開啟藍牙與 Wi-Fi。','前往控制中心→長按無線連線區塊→開啟 AirDrop（設定為「所有人」或「聯絡人」）。','確認兩台裝置距離在 9 公尺以內，且彼此沒有被阻擋。','關閉並重新開啟藍牙和 Wi-Fi。','確認對方裝置螢幕已解鎖且未被遮住。','重新啟動雙方裝置後再試。'],
+  },
+  {
+    id:'t9', prod:'Apple Watch', emoji:'🔄', title:'Apple Watch 無法與 iPhone 同步',
+    steps:['確認 iPhone 藍牙已開啟，且 Watch 在通訊範圍內。','重新啟動 Apple Watch（長按側邊按鈕→滑動關機）。','重新啟動 iPhone。','確認 Watch App 與 watchOS 均為最新版本。','若問題持續，可嘗試取消配對後重新配對（Watch App→我的手錶→選取手錶→取消配對）。','注意：取消配對前請確保已有最近的備份以免資料遺失。'],
+  },
+];
+
+/* ===================== STATE ===================== */
+let isDark = false;
+let pCat = 'all';
+let fCat = 'all';
+let selProds = [];
+
+/* ===================== THEME ===================== */
+function toggleTheme() {
+  isDark = !isDark;
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : '');
+  document.getElementById('ticon').textContent = isDark ? '☀️' : '🌙';
+  document.getElementById('ttxt').textContent  = isDark ? '淺色' : '深色';
+}
+
+/* ===================== NAV ===================== */
+function gotoSec(name, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.bnav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('s-' + name).classList.add('active');
+  el.classList.add('active');
+  window.scrollTo(0, 0);
+  if (name === 'features') renderFeats();
+  if (name === 'trouble')  renderTrouble();
+  if (name === 'specs')    renderCompareUI();
+}
+
+/* ===================== PRODUCTS ===================== */
+function renderProds(q = '') {
+  const grid = document.getElementById('pgrid');
+  const q2 = q.toLowerCase();
+  const list = PRODUCTS.filter(p =>
+    (pCat === 'all' || p.cat === pCat) &&
+    (!q2 || p.name.toLowerCase().includes(q2) || p.desc.toLowerCase().includes(q2))
+  );
+  if (!list.length) { grid.innerHTML = '<p class="nores" style="grid-column:1/-1">找不到相關產品 😕</p>'; return; }
+  grid.innerHTML = list.map(p =>
+    `<div class="pcard" onclick="showProd('${p.id}')">
+      <div class="pc-emoji">${p.emoji}</div>
+      <div class="pc-name">${p.name}</div>
+      <div class="pc-tag">${p.tagline}</div>
+      <div class="pc-price">${p.price}</div>
+    </div>`
+  ).join('');
+}
+
+function setPcat(c, el) {
+  pCat = c;
+  document.querySelectorAll('#pcats .chip').forEach(x => x.classList.remove('active'));
+  el.classList.add('active');
+  renderProds(document.getElementById('psearch').value);
+}
+function filterP() { renderProds(document.getElementById('psearch').value); }
+
+function showProd(id) {
+  const p = PRODUCTS.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('pl-wrap').style.display = 'none';
+  const det = document.getElementById('pdetail');
+  det.classList.add('active');
+  const specRows = Object.entries(p.specs).map(([k,v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
+  const featTags = p.feats.map(f => `<span class="ftag">${f}</span>`).join('');
+  document.getElementById('pdetail-body').innerHTML = `
+    <div class="hero">
+      <div class="hero-em">${p.emoji}</div>
+      <div class="hero-name">${p.name}</div>
+      <div class="hero-price">${p.price}</div>
+      <div class="hero-desc">${p.desc}</div>
+    </div>
+    <div class="acc open">
+      <div class="acc-hd" onclick="toggleAcc(this)">✨ 主要特色 <span class="arr">▾</span></div>
+      <div class="acc-body"><div class="ftags">${featTags}</div></div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd" onclick="toggleAcc(this)">📋 完整規格 <span class="arr">▾</span></div>
+      <div class="acc-body"><table class="stbl"><tbody>${specRows}</tbody></table></div>
+    </div>
+    <div class="atc-wrap">
+      <div class="atc-hint">將此產品加入規格比較</div>
+      <button class="atc-btn" onclick="addAndGoCompare('${p.id}')">+ 加入比較</button>
+    </div>`;
+}
+
+function backToList() {
+  document.getElementById('pl-wrap').style.display = '';
+  document.getElementById('pdetail').classList.remove('active');
+}
+
+function addAndGoCompare(id) {
+  if (!selProds.includes(id) && selProds.length < 3) selProds.push(id);
+  gotoSec('specs', document.querySelectorAll('.bnav-item')[3]);
+}
+
+/* ===================== FEATURES ===================== */
+function setFcat(c, el) {
+  fCat = c;
+  document.querySelectorAll('#fcats .chip').forEach(x => x.classList.remove('active'));
+  el.classList.add('active');
+  renderFeats();
+}
+function renderFeats() {
+  const body = document.getElementById('feat-body');
+  const list = FEATURES.filter(f => fCat === 'all' || f.cat === fCat);
+  if (!list.length) { body.innerHTML = '<p class="nores">暫無此分類功能</p>'; return; }
+  body.innerHTML = list.map(f => `
+    <div class="acc open" style="margin-bottom:10px;">
+      <div class="acc-hd feat-hd-wrap" onclick="toggleAcc(this)">
+        <div><div>${f.title}</div><div class="feat-sub">${f.sub}</div></div>
+        <span class="arr">▾</span>
+      </div>
+      <div class="acc-body" style="display:block;">
+        <p style="margin-bottom:12px;font-size:13px;">${f.desc}</p>
+        ${f.items.map(i => `
+          <div class="feat-item">
+            <div class="feat-item-name">▸ ${i.n}</div>
+            <div class="feat-item-desc">${i.d}</div>
+          </div>`).join('')}
+        <div class="dev-badges" style="margin-top:10px;">
+          ${f.devices.map(d => `<span class="dbadge">📱 ${d}</span>`).join('')}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+/* ===================== TROUBLESHOOTING ===================== */
+function renderTrouble(q = '') {
+  const body = document.getElementById('trouble-body');
+  const q2 = q.toLowerCase();
+  const list = TROUBLES.filter(t => !q2 || t.title.toLowerCase().includes(q2) || t.prod.toLowerCase().includes(q2));
+  if (!list.length) { body.innerHTML = '<p class="nores">找不到相關問題 😕</p>'; return; }
+  const groups = {};
+  list.forEach(t => { (groups[t.prod] = groups[t.prod] || []).push(t); });
+  body.innerHTML = Object.entries(groups).map(([prod, items]) => `
+    <div style="margin-bottom:6px;">
+      <div class="tcat-label">📱 ${prod}</div>
+      ${items.map(t => `
+        <div class="acc" style="margin-bottom:8px;">
+          <div class="acc-hd" onclick="toggleAcc(this)">
+            <span>${t.emoji} ${t.title}</span>
+            <span class="arr">▾</span>
+          </div>
+          <div class="acc-body">
+            <ol class="steps">${t.steps.map(s => `<li>${s}</li>`).join('')}</ol>
+          </div>
+        </div>`).join('')}
+    </div>`).join('');
+}
+function filterT() { renderTrouble(document.getElementById('tsearch').value); }
+
+/* ===================== COMPARE / SPECS ===================== */
+function renderCompareUI() {
+  // chips
+  const cc = document.getElementById('cchips');
+  cc.innerHTML = PRODUCTS.map(p =>
+    `<div class="cchip ${selProds.includes(p.id)?'selected':''}" onclick="toggleSel('${p.id}',this)">${p.emoji} ${p.name}</div>`
+  ).join('');
+  updateCmpBtn();
+  renderSpecsAll();
+}
+
+function toggleSel(id, el) {
+  if (selProds.includes(id)) {
+    selProds = selProds.filter(x => x !== id);
+    el.classList.remove('selected');
+  } else {
+    if (selProds.length >= 3) { alert('最多選擇 3 個產品比較！'); return; }
+    selProds.push(id);
+    el.classList.add('selected');
+  }
+  updateCmpBtn();
+  document.getElementById('cresult').classList.remove('show');
+}
+
+function updateCmpBtn() {
+  const btn = document.getElementById('cmp-btn');
+  const n = selProds.length;
+  btn.disabled = n < 2;
+  btn.textContent = n < 2 ? (n === 0 ? '請先選擇產品' : '再選一個產品') : `比較 ${n} 個產品 →`;
+}
+
+function runCompare() {
+  if (selProds.length < 2) return;
+  const sel = selProds.map(id => PRODUCTS.find(p => p.id === id));
+  const keys = [...new Set(sel.flatMap(p => Object.keys(p.specs)))];
+  const th = `<tr><th>規格</th>${sel.map(p=>`<th><span class="ctbl-em">${p.emoji}</span>${p.name}</th>`).join('')}</tr>`;
+  const rows = keys.map(k =>
+    `<tr><td>${k}</td>${sel.map(p=>`<td>${p.specs[k]||'—'}</td>`).join('')}</tr>`
+  ).join('');
+  document.getElementById('ctbl-body').innerHTML =
+    `<div style="font-size:15px;font-weight:800;margin-bottom:10px;">比較結果</div>
+     <div class="ctbl-wrap"><table class="ctbl"><thead>${th}</thead><tbody>${rows}</tbody></table></div>`;
+  const el = document.getElementById('cresult');
+  el.classList.add('show');
+  el.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function renderSpecsAll() {
+  document.getElementById('specs-all').innerHTML =
+    `<div style="font-size:15px;font-weight:700;color:var(--sub);margin-bottom:12px;">所有產品規格一覽</div>
+    ${PRODUCTS.map(p => `
+      <div class="acc" style="margin-bottom:8px;">
+        <div class="acc-hd" onclick="toggleAcc(this)">
+          <div style="display:flex;align-items:center;gap:9px;">
+            <span>${p.emoji}</span>
+            <div><div style="font-size:14px;">${p.name}</div><div style="font-size:11px;font-weight:400;color:var(--sub);">${p.price}</div></div>
+          </div>
+          <span class="arr">▾</span>
+        </div>
+        <div class="acc-body">
+          <table class="stbl"><tbody>
+            ${Object.entries(p.specs).map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join('')}
+          </tbody></table>
+        </div>
+      </div>`).join('')}`;
+}
+
+/* ===================== ACCORDION ===================== */
+function toggleAcc(hd) {
+  const acc = hd.closest('.acc');
+  const body = acc.querySelector('.acc-body');
+  if (acc.classList.toggle('open')) {
+    body.style.display = 'block';
+  } else {
+    body.style.display = 'none';
+  }
+}
+
+/* ===================== INIT ===================== */
+renderProds();
+</script>
+</body>
+</html>
