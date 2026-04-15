@@ -1,0 +1,2241 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff" id="tcmeta">
+  <title>Apple 產品資料庫</title>
+  <style>
+    :root {
+      --bg:#f5f5f7; --card:#ffffff; --nav:#ffffffcc; --border:#e0e0e0;
+      --txt:#1d1d1f; --sub:#6e6e73; --accent:#0071e3; --acc2:#34c759;
+      --shadow:0 2px 12px rgba(0,0,0,.08); --radius:16px; --navh:60px;
+      color-scheme: light;
+    }
+    [data-theme="dark"] {
+      --bg:#000000; --card:#1c1c1e; --nav:#000000cc; --border:#3a3a3c;
+      --txt:#f5f5f7; --sub:#98989d; --accent:#2997ff; --acc2:#30d158;
+      --shadow:0 2px 12px rgba(0,0,0,.4);
+      color-scheme: dark;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{background:var(--bg);}
+    body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',sans-serif;
+      background:var(--bg);color:var(--txt);min-height:100vh;
+      padding-bottom:calc(var(--navh) + env(safe-area-inset-bottom));}
+    /* HEADER */
+    header{position:sticky;top:0;z-index:100;
+      background:var(--nav);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      border-bottom:1px solid var(--border);
+      padding:12px 16px 12px calc(16px + env(safe-area-inset-left));
+      padding-top:calc(12px + env(safe-area-inset-top));
+      display:flex;align-items:center;justify-content:space-between;gap:10px;}
+    .hd-title{font-size:18px;font-weight:700;letter-spacing:-.3px;}
+    .hd-title span{color:var(--accent);}
+    .theme-btn{display:flex;align-items:center;gap:6px;background:var(--card);
+      border:1px solid var(--border);border-radius:20px;padding:6px 12px;
+      font-size:13px;color:var(--txt);cursor:pointer;white-space:nowrap;flex-shrink:0;}
+    /* BOTTOM NAV */
+    nav{position:fixed;bottom:0;left:0;right:0;z-index:100;
+      background:var(--nav);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      border-top:1px solid var(--border);
+      display:flex;padding-bottom:env(safe-area-inset-bottom);}
+    nav button{flex:1;background:none;border:none;color:var(--sub);cursor:pointer;
+      padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;
+      font-size:10px;transition:color .2s;}
+    nav button.active{color:var(--accent);}
+    nav button .ni{font-size:22px;line-height:1;}
+    /* PAGES */
+    .page{display:none;padding:16px;max-width:700px;margin:0 auto;}
+    .page.active{display:block;}
+    /* SECTION TITLE */
+    .sec-title{font-size:22px;font-weight:700;margin-bottom:4px;}
+    .sec-sub{font-size:14px;color:var(--sub);margin-bottom:16px;}
+    /* SEARCH */
+    .search-wrap{position:relative;margin-bottom:16px;}
+    .search-wrap input{width:100%;padding:10px 16px 10px 40px;border-radius:12px;
+      border:1px solid var(--border);background:var(--card);color:var(--txt);font-size:15px;outline:none;}
+    .search-wrap::before{content:'🔍';position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;}
+    /* FILTER CHIPS */
+    .chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;scrollbar-width:none;}
+    .chips::-webkit-scrollbar{display:none;}
+    .chip{flex-shrink:0;background:var(--card);border:1px solid var(--border);border-radius:20px;
+      padding:5px 14px;font-size:13px;cursor:pointer;color:var(--sub);white-space:nowrap;}
+    .chip.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+    /* PRODUCT GRID */
+    .prod-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+    @media(max-width:380px){.prod-grid{grid-template-columns:1fr;}}
+    .prod-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+      padding:16px;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden;}
+    .prod-card:active{transform:scale(.97);}
+    .prod-emoji{font-size:40px;margin-bottom:8px;display:block;}
+    .prod-name{font-size:15px;font-weight:600;margin-bottom:2px;}
+    .prod-tagline{font-size:12px;color:var(--sub);margin-bottom:6px;}
+    .prod-price{font-size:13px;color:var(--accent);font-weight:600;}
+    .cmp-chk{position:absolute;top:10px;right:10px;width:22px;height:22px;border-radius:50%;
+      border:2px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:center;
+      font-size:12px;transition:all .2s;}
+    .cmp-chk.sel{background:var(--accent);border-color:var(--accent);color:#fff;}
+    /* PRODUCT DETAIL MODAL */
+    .overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.5);
+      align-items:flex-end;justify-content:center;}
+    .overlay.open{display:flex;}
+    .modal{background:var(--card);border-radius:24px 24px 0 0;width:100%;max-width:700px;
+      max-height:90vh;overflow-y:auto;padding:20px 20px calc(20px + env(safe-area-inset-bottom));}
+    .modal-drag{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px;}
+    .modal-emoji{font-size:56px;margin-bottom:8px;}
+    .modal-name{font-size:24px;font-weight:700;margin-bottom:4px;}
+    .modal-tagline{font-size:14px;color:var(--sub);margin-bottom:8px;}
+    .modal-price{font-size:17px;color:var(--accent);font-weight:600;margin-bottom:14px;}
+    .modal-desc{font-size:15px;line-height:1.6;color:var(--sub);margin-bottom:16px;}
+    .modal-feats{list-style:none;margin-bottom:16px;}
+    .modal-feats li{padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;display:flex;gap:8px;}
+    .modal-feats li::before{content:'✦';color:var(--accent);}
+    .spec-table{width:100%;border-collapse:collapse;font-size:13px;}
+    .spec-table td{padding:8px 6px;border-bottom:1px solid var(--border);vertical-align:top;}
+    .spec-table td:first-child{color:var(--sub);width:38%;}
+    .modal-close{width:100%;margin-top:16px;padding:12px;background:var(--accent);color:#fff;
+      border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;}
+    /* ACCORDION */
+    .acc{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+      margin-bottom:10px;overflow:hidden;}
+    .acc-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;}
+    .acc-hd-left{display:flex;align-items:center;gap:10px;}
+    .acc-icon{font-size:22px;}
+    .acc-title{font-size:15px;font-weight:600;}
+    .acc-arrow{color:var(--sub);transition:transform .25s;font-size:18px;}
+    .acc.open .acc-arrow{transform:rotate(90deg);}
+    .acc-body{display:none;padding:0 16px 14px;}
+    .acc.open .acc-body{display:block;}
+    .feat-list{list-style:none;}
+    .feat-list li{padding:6px 0;border-bottom:1px solid var(--border);font-size:14px;line-height:1.5;display:flex;gap:8px;}
+    .feat-list li:last-child{border-bottom:none;}
+    .feat-list li::before{content:'→';color:var(--accent);flex-shrink:0;}
+    /* TROUBLE */
+    .trouble-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+      margin-bottom:10px;overflow:hidden;}
+    .trouble-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;gap:8px;}
+    .trouble-title{font-size:14px;font-weight:600;flex:1;}
+    .trouble-cat{font-size:11px;color:var(--accent);background:var(--bg);border-radius:8px;padding:2px 8px;flex-shrink:0;}
+    .trouble-arrow{color:var(--sub);transition:transform .25s;font-size:18px;flex-shrink:0;}
+    .trouble-item.open .trouble-arrow{transform:rotate(90deg);}
+    .trouble-body{display:none;padding:0 16px 14px;}
+    .trouble-item.open .trouble-body{display:block;}
+    .steps{list-style:none;counter-reset:step;}
+    .steps li{counter-increment:step;padding:7px 0;border-bottom:1px solid var(--border);
+      font-size:14px;line-height:1.5;display:flex;gap:10px;}
+    .steps li:last-child{border-bottom:none;}
+    .steps li::before{content:counter(step);background:var(--accent);color:#fff;
+      width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+      font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;}
+    /* COMPARISON */
+    .cmp-bar{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+      padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+    .cmp-count{font-size:14px;color:var(--sub);}
+    .cmp-count span{color:var(--accent);font-weight:700;}
+    .cmp-btn{background:var(--accent);color:#fff;border:none;border-radius:10px;
+      padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;}
+    .cmp-btn:disabled{background:var(--border);color:var(--sub);cursor:not-allowed;}
+    .cmp-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+    .cmp-table{border-collapse:collapse;font-size:13px;min-width:500px;width:100%;}
+    .cmp-table th,.cmp-table td{padding:10px 12px;border:1px solid var(--border);text-align:left;vertical-align:top;}
+    .cmp-table th{background:var(--bg);font-weight:600;}
+    .cmp-table .row-label{background:var(--bg);color:var(--sub);font-weight:600;white-space:nowrap;}
+    /* SERVICE PAGE */
+    .svc-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+      padding:18px;margin-bottom:12px;display:flex;align-items:center;gap:14px;
+      text-decoration:none;color:var(--txt);cursor:pointer;}
+    .svc-card:active{opacity:.7;}
+    .svc-icon{font-size:34px;flex-shrink:0;}
+    .svc-info{}
+    .svc-title{font-size:15px;font-weight:600;margin-bottom:2px;}
+    .svc-desc{font-size:13px;color:var(--sub);}
+    .svc-arrow{margin-left:auto;color:var(--sub);font-size:18px;flex-shrink:0;}
+    .svc-section-title{font-size:13px;font-weight:600;color:var(--sub);text-transform:uppercase;
+      letter-spacing:.5px;margin:20px 0 8px;}
+    /* EMPTY STATE */
+    .empty{text-align:center;padding:48px 16px;color:var(--sub);}
+    .empty-icon{font-size:48px;margin-bottom:12px;}
+    .empty p{font-size:15px;}
+    /* TAGS */
+    .trouble-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;}
+    .trouble-tag{font-size:11px;color:var(--sub);background:var(--bg);border:1px solid var(--border);
+      border-radius:6px;padding:2px 7px;}
+    /* TROUBLE GROUP TITLE */
+    .trouble-group-title{font-size:13px;font-weight:700;color:var(--sub);
+      text-transform:uppercase;letter-spacing:.5px;
+      padding:14px 4px 6px;margin-top:4px;border-bottom:2px solid var(--accent);margin-bottom:8px;}
+    /* COMPARISON SELECTED CARD */
+    .prod-card.cmp-selected{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent);}
+    /* COMPARISON PICKER */
+    #cmp-pick-grid{grid-template-columns:repeat(3,1fr);gap:8px;}
+    @media(max-width:380px){#cmp-pick-grid{grid-template-columns:repeat(2,1fr);}}
+    .cmp-pick-card{background:var(--card);border:1px solid var(--border);border-radius:12px;
+      padding:10px 8px 10px 32px;cursor:pointer;position:relative;transition:border-color .15s;
+      display:flex;align-items:center;min-height:42px;}
+    .cmp-pick-card .cmp-chk{top:50%;transform:translateY(-50%);left:7px;right:auto;width:18px;height:18px;font-size:10px;}
+    .cmp-pick-card.cmp-selected{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent);}
+    .cmp-pick-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  
+    /* ── DROPDOWN SELECT ── */
+    .select-wrap{position:relative;margin-bottom:14px;}
+    .select-wrap select{width:100%;padding:10px 16px;border-radius:12px;
+      border:1px solid var(--border);background:var(--card);color:var(--txt);
+      font-size:14px;appearance:none;-webkit-appearance:none;cursor:pointer;outline:none;}
+    .select-wrap::after{content:'▾';position:absolute;right:14px;top:50%;
+      transform:translateY(-50%);color:var(--sub);pointer-events:none;font-size:16px;}
+
+    /* ── REFRESH BUTTON ── */
+    .refresh-btn{display:flex;align-items:center;gap:5px;background:var(--card);
+      border:1px solid var(--border);border-radius:20px;padding:6px 11px;
+      font-size:13px;color:var(--txt);cursor:pointer;white-space:nowrap;flex-shrink:0;}
+    .refresh-btn.spinning .ri{display:inline-block;animation:spin .7s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .ri{display:inline-block;}
+
+    /* ── MODAL IMAGE ── */
+    .modal-img-wrap{text-align:center;margin-bottom:14px;background:var(--bg);
+      border-radius:16px;padding:16px;}
+    .modal-img-wrap img{max-width:180px;max-height:180px;object-fit:contain;display:block;margin:0 auto;}
+    .modal-img-emoji{font-size:72px;line-height:1;display:block;}
+    .modal-apple-link{display:inline-flex;align-items:center;gap:5px;margin-top:8px;
+      font-size:12px;color:var(--accent);text-decoration:none;}
+
+    /* ── SALES POINTS ── */
+    .sales-section{background:linear-gradient(135deg,#0071e3 0%,#1e90ff 100%);
+      border-radius:14px;padding:14px 16px;margin-bottom:16px;}
+    [data-theme="dark"] .sales-section{background:linear-gradient(135deg,#0a52c7 0%,#0c70d4 100%);}
+    .sales-title{font-size:11px;font-weight:700;color:rgba(255,255,255,.75);
+      text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+    .sales-item{font-size:13px;color:#fff;padding:4px 0;display:flex;gap:8px;align-items:flex-start;line-height:1.5;}
+    .sales-item::before{content:'★';flex-shrink:0;font-size:11px;margin-top:2px;}
+    .sales-drive-btn{display:inline-flex;align-items:center;gap:4px;margin-top:8px;
+      background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3);
+      border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;}
+
+    /* ── QUIZ PAGE ── */
+    .quiz-progress{margin-bottom:14px;}
+    .quiz-prog-bar{background:var(--border);border-radius:4px;height:6px;margin-bottom:4px;}
+    .quiz-prog-fill{background:var(--accent);border-radius:4px;height:6px;transition:width .3s;}
+    .quiz-prog-text{font-size:12px;color:var(--sub);}
+    .quiz-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+      padding:18px;margin-bottom:12px;}
+    .quiz-question{font-size:16px;font-weight:600;line-height:1.5;margin-bottom:16px;}
+    .quiz-options{display:flex;flex-direction:column;gap:8px;}
+    .quiz-option{display:flex;align-items:center;gap:12px;background:var(--bg);
+      border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;
+      font-size:14px;color:var(--txt);cursor:pointer;text-align:left;transition:border-color .15s,background .15s;}
+    .quiz-option:not(:disabled):hover{border-color:var(--accent);background:var(--card);}
+    .quiz-option:disabled{cursor:default;opacity:.85;}
+    .quiz-option.correct{border-color:#30d158!important;background:#30d15818!important;}
+    .quiz-option.wrong{border-color:#ff453a!important;background:#ff453a18!important;}
+    .quiz-opt-letter{width:26px;height:26px;border-radius:50%;background:var(--border);
+      display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;
+      flex-shrink:0;color:var(--sub);}
+    .quiz-option.correct .quiz-opt-letter{background:#30d158;color:#fff;}
+    .quiz-option.wrong .quiz-opt-letter{background:#ff453a;color:#fff;}
+    .quiz-feedback{margin-bottom:14px;}
+    .quiz-fb-msg{border-radius:12px;padding:12px 14px;font-size:14px;font-weight:600;margin-bottom:8px;}
+    .quiz-fb-msg.correct{background:#30d15818;color:#30d158;border:1px solid #30d158;}
+    .quiz-fb-msg.wrong{background:#ff453a18;color:#ff453a;border:1px solid #ff453a;}
+    .quiz-next-btn{width:100%;padding:12px;background:var(--accent);color:#fff;
+      border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;}
+    .quiz-result-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+      padding:28px 20px;text-align:center;margin-bottom:16px;}
+    .quiz-result-score{font-size:56px;font-weight:700;color:var(--accent);line-height:1;}
+    .quiz-result-sub{font-size:16px;color:var(--sub);margin:4px 0 8px;}
+    .quiz-result-grade{font-size:22px;font-weight:600;margin-bottom:0;}
+    .quiz-review-item{background:var(--card);border:1px solid var(--border);
+      border-radius:12px;padding:12px 14px;margin-bottom:8px;}
+    .quiz-review-item.correct{border-left:3px solid #30d158;}
+    .quiz-review-item.wrong{border-left:3px solid #ff453a;}
+    .quiz-review-q{font-size:13px;font-weight:600;margin-bottom:4px;}
+    .quiz-review-a{font-size:12px;color:var(--sub);}
+    .quiz-review-correct{font-size:12px;color:#30d158;margin-top:2px;}
+    .quiz-retry-btn{width:100%;padding:12px;background:var(--card);color:var(--accent);
+      border:2px solid var(--accent);border-radius:12px;font-size:15px;font-weight:600;
+      cursor:pointer;margin-top:8px;}
+
+    /* ── COMING SOON BADGE ── */
+    .badge-soon{position:absolute;top:8px;right:8px;background:linear-gradient(135deg,#ff9500,#ff6b00);
+      color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;
+      letter-spacing:.3px;white-space:nowrap;}
+    .prod-card.soon{border-color:#ff9500;border-style:dashed;}
+    .soon-banner{background:linear-gradient(135deg,#ff9500,#ff6b00);color:#fff;
+      border-radius:10px;padding:8px 14px;font-size:13px;font-weight:600;
+      margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+
+    /* ── CMP DUAL SELECT ── */
+    .cmp-dual{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;margin-bottom:16px;}
+    .cmp-vs{font-size:18px;font-weight:800;color:var(--sub);text-align:center;}
+    .cmp-dual select{width:100%;padding:10px 14px;border-radius:12px;
+      border:1.5px solid var(--border);background:var(--card);color:var(--txt);
+      font-size:13px;appearance:none;-webkit-appearance:none;cursor:pointer;outline:none;}
+    .cmp-dual-wrap{position:relative;}
+    .cmp-dual-wrap::after{content:'▾';position:absolute;right:12px;top:50%;
+      transform:translateY(-50%);color:var(--sub);pointer-events:none;}
+    .cmp-add-third{font-size:13px;color:var(--accent);background:none;border:none;
+      cursor:pointer;padding:4px 0;margin-bottom:12px;}
+
+    /* ── FEATURE CARDS ── */
+    .feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px;}
+    @media(max-width:400px){.feat-grid{grid-template-columns:1fr;}}
+    .feat-card{border-radius:var(--radius);overflow:hidden;cursor:pointer;
+      transition:transform .15s,box-shadow .15s;position:relative;}
+    .feat-card:active{transform:scale(.97);}
+    .feat-card-inner{padding:20px 16px 16px;min-height:130px;display:flex;flex-direction:column;justify-content:flex-end;}
+    .feat-card-scene{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+      font-size:52px;opacity:.25;pointer-events:none;}
+    .feat-card-icon{font-size:28px;margin-bottom:6px;}
+    .feat-card-title{font-size:14px;font-weight:700;color:#fff;line-height:1.3;margin-bottom:3px;}
+    .feat-card-sub{font-size:11px;color:rgba(255,255,255,.8);line-height:1.4;}
+    .feat-detail{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+      padding:14px 16px;margin-top:-4px;margin-bottom:12px;display:none;}
+    .feat-detail.open{display:block;}
+    .feat-scenario{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);align-items:flex-start;}
+    .feat-scenario:last-child{border-bottom:none;}
+    .feat-scenario-emoji{font-size:24px;flex-shrink:0;line-height:1.2;}
+    .feat-scenario-text{font-size:13px;line-height:1.5;color:var(--txt);}
+    .feat-scenario-label{font-size:11px;font-weight:700;color:var(--accent);margin-bottom:2px;}
+  
+/* ═══ Product Selector Dropdown ═══ */
+.prod-selector-wrap {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 18px 20px;
+  margin: 0 16px 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+.prod-selector-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--sub);
+  margin-bottom: 8px;
+}
+.prod-selector-wrap select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--bg);
+  color: var(--txt);
+  font-size: 15px;
+  font-weight: 500;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  cursor: pointer;
+}
+.prod-selector-wrap select:focus { outline: none; border-color: var(--accent); }
+.prod-browse-title {
+  font-size: 12px;
+  color: var(--sub);
+  text-align: center;
+  margin: 14px 0 4px;
+  font-weight: 500;
+}
+/* Category tab pills */
+.cat-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 0 16px 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.cat-tabs::-webkit-scrollbar { display: none; }
+.cat-tab {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: var(--bg);
+  color: var(--sub);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .2s;
+}
+.cat-tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* ═══ Trouble Page Redesign ═══ */
+.trouble-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 10px 16px;
+  margin: 0 16px 12px;
+}
+.trouble-search-icon { font-size: 16px; }
+.trouble-search-wrap input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--txt);
+  font-size: 15px;
+  outline: none;
+}
+.trouble-search-wrap input::placeholder { color: var(--sub); }
+
+/* Slim pill filter row */
+.trouble-filter-row {
+  display: flex;
+  gap: 6px;
+  padding: 0 16px 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.trouble-filter-row::-webkit-scrollbar { display: none; }
+.trouble-filter-pill {
+  flex-shrink: 0;
+  padding: 5px 13px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: var(--bg);
+  color: var(--sub);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .18s;
+  white-space: nowrap;
+}
+.trouble-filter-pill.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* Section divider — only shows in 全部 mode */
+.trouble-section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 16px 8px;
+}
+.trouble-section-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  letter-spacing: .04em;
+}
+.trouble-section-line {
+  flex: 1;
+  height: 1.5px;
+  background: var(--border);
+  border-radius: 2px;
+}
+
+/* Cards */
+.trouble-card {
+  background: var(--card);
+  border-radius: 14px;
+  margin: 0 16px 8px;
+  overflow: hidden;
+  border: 1.5px solid var(--border);
+}
+.trouble-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 13px 16px;
+  cursor: pointer;
+  user-select: none;
+}
+.trouble-card-title { flex: 1; font-size: 14px; font-weight: 600; line-height: 1.3; }
+.trouble-card-chevron { font-size: 11px; color: var(--sub); transition: transform .2s; }
+.trouble-card.open .trouble-card-chevron { transform: rotate(180deg); }
+.trouble-card-body { display: none; padding: 0 14px 14px; }
+.trouble-card.open .trouble-card-body { display: block; }
+.trouble-step {
+  display: flex;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--txt);
+}
+.trouble-step:last-child { border-bottom: none; }
+.trouble-step-num {
+.trouble-step-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+
+/* ═══ Inline Product Detail ═══ */
+#prod-detail { padding-bottom: 24px; }
+.pdc { margin:14px 16px 0; border-radius:20px; overflow:hidden; border:1.5px solid var(--border); box-shadow:0 6px 28px rgba(0,0,0,.25); }
+.pdc-hd { background:linear-gradient(135deg,#0071e3 0%,#34aadc 55%,#5e5ce6 100%); padding:22px 18px 18px; color:#fff; }
+.pdc-emoji { font-size:44px; line-height:1; margin-bottom:10px; display:block; }
+.pdc-name { font-size:22px; font-weight:700; letter-spacing:-.4px; margin-bottom:4px; }
+.pdc-tagline { font-size:13px; opacity:.82; margin-bottom:14px; line-height:1.4; }
+.pdc-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.pdc-price { display:inline-block; background:rgba(255,255,255,.22); border:1px solid rgba(255,255,255,.35); color:#fff; font-size:14px; font-weight:700; padding:5px 14px; border-radius:20px; }
+.pdc-link { display:inline-flex; align-items:center; gap:4px; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.28); color:#fff; font-size:12px; font-weight:600; padding:5px 12px; border-radius:20px; text-decoration:none; }
+.pdc-body { background:var(--card); }
+.pdc-sec { padding:14px 18px; border-bottom:1px solid var(--border); }
+.pdc-sec:last-child { border-bottom:none; }
+.pdc-sec-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.09em; color:var(--sub); margin-bottom:10px; }
+.pdc-desc { font-size:14px; line-height:1.68; color:var(--txt); }
+.pdc-chips { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+@media(max-width:360px){ .pdc-chips{grid-template-columns:1fr;} }
+.pdc-chip { background:var(--bg); border:1px solid var(--border); border-radius:11px; padding:8px 10px 8px 28px; font-size:12.5px; line-height:1.4; color:var(--txt); position:relative; }
+.pdc-chip::before { content:'✦'; position:absolute; left:10px; top:9px; color:var(--accent); font-size:10px; }
+.pdc-specs { width:100%; }
+.pdc-spec-row { display:flex; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); }
+.pdc-spec-row:last-child { border-bottom:none; }
+.pdc-spec-k { flex:0 0 38%; font-size:12px; color:var(--sub); font-weight:500; }
+.pdc-spec-v { flex:1; font-size:13px; font-weight:600; color:var(--txt); line-height:1.4; }
+.pdc-sales { display:flex; flex-direction:column; gap:6px; }
+.pdc-sale { display:flex; gap:8px; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:9px 12px; font-size:13px; line-height:1.45; color:var(--txt); }
+.pdc-sale::before { content:'🏷'; flex-shrink:0; }
+
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hd-title">Apple <span>產品資料庫</span></div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <button class="refresh-btn" id="refresh-btn" onclick="refreshData()">
+      <span class="ri" id="refresh-icon">🔄</span><span>重新整理</span>
+    </button>
+    <button class="theme-btn" onclick="toggleTheme()">
+      <span id="ticon">🌙</span><span id="ttxt">深色</span>
+    </button>
+  </div>
+</header>
+
+<!-- PRODUCT DETAIL OVERLAY -->
+<div class="overlay" id="overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-drag"></div>
+    <div id="modal-body"></div>
+    <button class="modal-close" onclick="closeOverlay()">關閉</button>
+  </div>
+</div>
+
+<!-- PAGE: 產品 -->
+<div class="page active" id="pg-prod">
+  <p class="sec-title">產品介紹</p>
+  <p class="sec-sub">選擇產品，查看詳細規格</p>
+  <div class="prod-selector-wrap">
+    <div class="prod-selector-label">選擇產品</div>
+    <select id="prod-select" onchange="showProdDetail(this.value)">
+      <option value="">── 請選擇產品 ──</option>
+    </select>
+  </div>
+  <div id="prod-detail"></div>
+</div>
+
+<!-- PAGE: 功能 -->
+<div class="page" id="pg-feat">
+  <p class="sec-title">功能說明</p>
+  <p class="sec-sub">點選情境卡片，了解各功能如何融入您的日常生活</p>
+  <div class="feat-grid" id="feat-grid"></div>
+  <div id="feat-detail-area"></div>
+</div>
+
+<!-- PAGE: 故障排除 -->
+<div class="page" id="pg-trouble">
+  <p class="sec-title">故障排查</p>
+  <p class="sec-sub">選擇裝置類別，快速找到解決步驟</p>
+  <div class="trouble-search-wrap">
+    <span class="trouble-search-icon">🔍</span>
+    <input type="search" placeholder="搜尋問題關鍵字…" id="trouble-search" oninput="renderTrouble()">
+  </div>
+  <div class="trouble-filter-row" id="trouble-cats"></div>
+  <div id="trouble-list"></div>
+</div>
+
+<!-- PAGE: 比較 -->
+<div class="page" id="pg-cmp">
+  <p class="sec-title">規格比較</p>
+  <p class="sec-sub">各選一款產品，立即對比規格差異</p>
+
+  <div class="cmp-dual">
+    <div class="cmp-dual-wrap">
+      <select id="cmp-sel-a" onchange="onCmpSelChange()">
+        <option value="">選擇第一款產品…</option>
+      </select>
+    </div>
+    <div class="cmp-vs">VS</div>
+    <div class="cmp-dual-wrap">
+      <select id="cmp-sel-b" onchange="onCmpSelChange()">
+        <option value="">選擇第二款產品…</option>
+      </select>
+    </div>
+  </div>
+
+  <button class="cmp-add-third" id="cmp-add-third-btn" onclick="toggleThirdCmp()">+ 加入第三款產品比較</button>
+  <div id="cmp-third-wrap" style="display:none;margin-bottom:12px;">
+    <div class="cmp-dual-wrap">
+      <select id="cmp-sel-c" onchange="onCmpSelChange()" style="width:100%;padding:10px 14px;border-radius:12px;border:1.5px solid var(--border);background:var(--card);color:var(--txt);font-size:13px;appearance:none;-webkit-appearance:none;cursor:pointer;outline:none;">
+        <option value="">選擇第三款產品（選填）…</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="cmp-result" style="margin-top:4px;"></div>
+</div>
+
+<div class="page" id="pg-svc">
+  <p class="sec-title">Apple 服務</p>
+  <p class="sec-sub">快速連結 Apple 官方服務頁面</p>
+
+  <div class="svc-section-title">保固 & 維修</div>
+  <a class="svc-card" href="https://checkcoverage.apple.com" target="_blank">
+    <div class="svc-icon">🛡️</div>
+    <div class="svc-info">
+      <div class="svc-title">查詢保固狀態</div>
+      <div class="svc-desc">輸入序號查詢保固效期與 AppleCare 狀態</div>
+    </div>
+    <div class="svc-arrow">›</div>
+  </a>
+
+  <div class="svc-section-title">帳務 & 購買</div>
+  <a class="svc-card" href="https://reportaproblem.apple.com" target="_blank">
+    <div class="svc-icon">💳</div>
+    <div class="svc-info">
+      <div class="svc-title">查詢購買記錄 & 申請退款</div>
+      <div class="svc-desc">App Store / iTunes 購買明細與退款申請</div>
+    </div>
+    <div class="svc-arrow">›</div>
+  </a>
+  <a class="svc-card" href="https://appleid.apple.com/account/manage" target="_blank">
+    <div class="svc-icon">👤</div>
+    <div class="svc-info">
+      <div class="svc-title">管理 Apple 帳號</div>
+      <div class="svc-desc">更改付款方式、訂閱與個人資料</div>
+    </div>
+    <div class="svc-arrow">›</div>
+  </a>
+  <a class="svc-card" href="https://apple.com/shop/order/list" target="_blank">
+    <div class="svc-icon">📦</div>
+    <div class="svc-info">
+      <div class="svc-title">訂單查詢</div>
+      <div class="svc-desc">查詢 Apple Store 網路商店訂單狀態</div>
+    </div>
+    <div class="svc-arrow">›</div>
+  </a>
+  <a class="svc-card" href="https://www.apple.com/tw/shop/buy-iphone" target="_blank">
+    <div class="svc-icon">🛍️</div>
+    <div class="svc-info">
+      <div class="svc-title">Apple Store 線上商店</div>
+      <div class="svc-desc">購買最新 Apple 產品</div>
+    </div>
+    <div class="svc-arrow">›</div>
+  </a>
+
+  <div class="svc-section-title">技術支援</div>
+  <a class="svc-card" href="https://support.apple.com/zh-tw" target="_blank">
+    <div class="svc-icon">💬</div>
+    <div class="svc-info">
+      <div class="svc-title">Apple 支援（台灣）</div>
+      <div class="svc-desc">瀏覽繁體中文支援文章、聯絡客服</div>
+    </div>
+    <div class="svc-arrow">›</div>
+  </a>
+  <a class="svc-card" href="https://getsupport.apple.com/?locale=zh_TW" target="_blank">
+    <div class="svc-icon">📞</div>
+    <div class="svc-info">
+      <div class="svc-title">聯絡 Apple 支援（台灣）</div>
+      <div class="svc-desc">電話、聊天或預約 Genius Bar</div>
+    </div>
+    <div class="svc-arrow">›</div>
+  </a>
+  <a class="svc-card" href="https://locate.apple.com" target="_blank">
+    <div class="svc-icon">📍</div>
+    <div class="svc-info">
+      <div class="svc-title">尋找 Apple 授權服務商</div>
+      <div class="svc-desc">找到最近的 Apple Store 或授權維修中心</div>
+    </div>
+    <div class="svc-arrow">›</div>
+  </a>
+
+  <div class="svc-section-title">查詢購買日期</div>
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;">
+    <div style="font-size:15px;font-weight:600;margin-bottom:6px;">如何查詢購買日期</div>
+    <div style="font-size:13px;color:var(--sub);line-height:1.7;">
+      1. 前往 <strong>checkcoverage.apple.com</strong><br>
+      2. 輸入裝置序號（可在「設定 → 一般 → 關於本機」找到）<br>
+      3. 頁面將顯示購買日期、保固效期及 AppleCare+ 狀態<br><br>
+      或透過：<strong>設定 → 一般 → 關於本機 → 保固</strong>（iOS 15.2 以上）
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+
+<!-- PAGE: Quiz -->
+<div class="page" id="pg-quiz">
+  <p class="sec-title">🎯 產品測驗</p>
+  <p class="sec-sub">選擇產品，自動生成 5 題單選題</p>
+  <div class="select-wrap">
+    <select id="quiz-prod-select" onchange="startQuiz()">
+      <option value="">請選擇產品…</option>
+    </select>
+  </div>
+  <div id="quiz-area">
+    <div class="empty"><div class="empty-icon">🎮</div><p>選擇產品後自動生成 5 道測驗題</p></div>
+  </div>
+</div>
+
+<nav>
+  <button class="active" onclick="goPage('prod',this)">
+    <span class="ni">📱</span>產品
+  </button>
+  <button onclick="goPage('feat',this)">
+    <span class="ni">✨</span>功能
+  </button>
+  <button onclick="goPage('trouble',this)">
+    <span class="ni">🔧</span>故障排除
+  </button>
+  <button onclick="goPage('cmp',this)">
+    <span class="ni">⚖️</span>比較
+  </button>
+  <button onclick="goPage('svc',this)">
+    <span class="ni">🛡️</span>服務
+  </button>
+  <button onclick="goPage('quiz',this)">
+    <span class="ni">🎯</span>測驗
+  </button>
+</nav>
+
+<script>
+/* ============================================================
+   資料編輯區 — 您可以直接修改以下陣列來新增/修改內容
+   ============================================================
+
+   PRODUCTS 陣列: 每項產品包含以下欄位
+     id       — 唯一識別碼 (英文)
+     name     — 產品名稱
+     cat      — 分類 (iPhone / Mac / iPad / Apple Watch / AirPods / 其他)
+     emoji    — 產品圖示
+     tagline  — 副標語
+     price    — 起始價格
+     desc     — 詳細描述
+     feats    — 功能亮點陣列
+     specs    — 規格物件 {規格名稱: 規格值}
+
+   FEATURES 陣列: 功能說明分類
+     title    — 功能標題
+     icon     — 圖示
+     items    — 說明項目陣列 ['說明文字', ...]
+
+   TROUBLES 陣列: 故障排除項目
+     id       — 唯一識別碼
+     prod     — 分類名稱
+     title    — 問題標題
+     tags     — 搜尋標籤陣列 (增加搜尋觸發率)
+     steps    — 解決步驟陣列 ['步驟1', '步驟2', ...]
+============================================================ */
+
+const PRODUCTS = [
+  /* ══════════════════════════════════════════
+     iPhone
+  ══════════════════════════════════════════ */
+  {id:'ip17promax',name:'iPhone 17 Pro Max',cat:'iPhone',emoji:'📱',
+   tagline:'鈦金屬。史上最強。',price:'NT$44,900 起',
+   desc:'iPhone 17 Pro Max 搭載 A19 Pro 晶片、8 倍潛望式長焦鏡頭與史上最長 iPhone 電池續航，鈦金屬機身輕盈堅固。',
+   feats:['A19 Pro 晶片','8× 潛望式長焦','ProMotion 120Hz OLED','Action Button','USB 4','MagSafe','Wi-Fi 7','衛星緊急求救'],
+   specs:{'顯示器':'6.9 吋 Super Retina XDR OLED','晶片':'A19 Pro','主相機':'48MP 廣角 + 48MP 超廣角 + 12MP 8× 長焦','前鏡頭':'24MP TrueDepth','儲存空間':'256GB / 512GB / 1TB / 2TB','連接埠':'USB 4 (Type-C)','5G':'支援','重量':'約 233g'}},
+
+  {id:'ip17pro',name:'iPhone 17 Pro',cat:'iPhone',emoji:'📱',
+   tagline:'鈦金屬。敢於卓越。',price:'NT$39,900 起',
+   desc:'iPhone 17 Pro 搭載 A19 Pro 晶片，6.3 吋 ProMotion OLED，擁有 Pro 系列完整三鏡頭攝影系統。',
+   feats:['A19 Pro 晶片','三鏡頭 Pro 攝影','ProMotion 120Hz','Action Button','USB 4','MagSafe'],
+   specs:{'顯示器':'6.3 吋 Super Retina XDR OLED','晶片':'A19 Pro','主相機':'48MP 廣角 + 48MP 超廣角 + 12MP 5× 長焦','前鏡頭':'24MP TrueDepth','儲存空間':'256GB / 512GB / 1TB','連接埠':'USB 4 (Type-C)','5G':'支援','重量':'約 199g'}},
+
+  {id:'ipair',name:'iPhone Air',cat:'iPhone',emoji:'📱',
+   tagline:'輕薄。有型。強悍。',price:'NT$36,900 起',
+   desc:'iPhone Air 是 Apple 有史以來最薄的 iPhone，6.5 吋 ProMotion 螢幕，A19 Pro 晶片，鈦金屬邊框，重量僅約 165g。',
+   feats:['A19 Pro 晶片','6.5 吋 ProMotion 120Hz','最薄 iPhone 機身','鈦金屬邊框','MagSafe','USB-C'],
+   specs:{'顯示器':'6.5 吋 Super Retina XDR OLED','晶片':'A19 Pro','主相機':'48MP 廣角','前鏡頭':'12MP TrueDepth','儲存空間':'256GB / 512GB / 1TB','連接埠':'USB-C','5G':'支援','重量':'約 165g','厚度':'約 5.6mm'}},
+
+  {id:'ip17',name:'iPhone 17',cat:'iPhone',emoji:'📱',
+   tagline:'大躍進。',price:'NT$29,900 起',
+   desc:'iPhone 17 搭載 A19 晶片，6.3 吋 ProMotion 螢幕，升級雙 48MP 攝影系統，帶來更大更亮的拍攝體驗。',
+   feats:['A19 晶片','6.3 吋 ProMotion 120Hz','雙 48MP 攝影','MagSafe','USB-C','5G'],
+   specs:{'顯示器':'6.3 吋 Super Retina XDR OLED','晶片':'A19','主相機':'48MP 廣角 + 48MP 超廣角','前鏡頭':'12MP TrueDepth','儲存空間':'256GB / 512GB','連接埠':'USB-C','5G':'支援','重量':'約 177g'}},
+
+  {id:'ip17e',name:'iPhone 17e',cat:'iPhone',emoji:'📱',
+   tagline:'Apple 智慧。觸手可及。',price:'NT$21,900 起',
+   desc:'iPhone 17e 於 2026 年 3 月發表，搭載 A19 晶片，6.1 吋 OLED，支援 MagSafe，是入門 iPhone 的全新選擇。',
+   feats:['A19 晶片','6.1 吋 OLED','MagSafe','USB-C','Apple Intelligence','Face ID'],
+   specs:{'顯示器':'6.1 吋 Super Retina XDR OLED','晶片':'A19','主相機':'48MP 廣角','前鏡頭':'12MP TrueDepth','儲存空間':'256GB / 512GB','連接埠':'USB-C','5G':'支援','重量':'約 167g'}},
+
+  {id:'ip16promax',name:'iPhone 16 Pro Max',cat:'iPhone',emoji:'📱',
+   tagline:'鈦金屬。史上最進化。',price:'NT$44,900 起',
+   desc:'搭載 A18 Pro 晶片，6.9 吋 Super Retina XDR 螢幕，4K 120fps 攝影，電池續航創歷代新高。',
+   feats:['A18 Pro 晶片','6.9 吋 ProMotion OLED','4K 120fps 錄影','Action Button','USB 3','MagSafe'],
+   specs:{'顯示器':'6.9 吋 Super Retina XDR OLED (ProMotion 120Hz)','晶片':'A18 Pro','主相機':'48MP 廣角 + 48MP 超廣角 + 12MP 5× 長焦','前鏡頭':'12MP TrueDepth','儲存空間':'256GB / 512GB / 1TB','連接埠':'USB 3 (Type-C)','電池':'最長 33 小時影片播放','5G':'支援','NFC':'支援','重量':'227g'}},
+
+  {id:'ip16pro',name:'iPhone 16 Pro',cat:'iPhone',emoji:'📱',
+   tagline:'鈦金屬。頂尖。巔峰。',price:'NT$39,900 起',
+   desc:'A18 Pro 晶片驅動，6.3 吋 ProMotion OLED，三鏡頭攝影系統，支援 Apple Intelligence。',
+   feats:['A18 Pro 晶片','6.3 吋 ProMotion','三鏡頭攝影','4K 120fps','Action Button','MagSafe'],
+   specs:{'顯示器':'6.3 吋 Super Retina XDR OLED (ProMotion 120Hz)','晶片':'A18 Pro','主相機':'48MP 廣角 + 48MP 超廣角 + 12MP 5× 長焦','前鏡頭':'12MP TrueDepth','儲存空間':'128GB / 256GB / 512GB / 1TB','連接埠':'USB 3 (Type-C)','電池':'最長 27 小時影片播放','5G':'支援','重量':'199g'}},
+
+  {id:'ip16',name:'iPhone 16',cat:'iPhone',emoji:'📱',
+   tagline:'為 Apple Intelligence 而生。',price:'NT$29,900 起',
+   desc:'A18 晶片搭配 6.1 吋 OLED，雙鏡頭攝影系統，新增 Camera Control 快捷鍵，全面支援 Apple Intelligence。',
+   feats:['A18 晶片','Camera Control','Apple Intelligence','48MP 主鏡頭','MagSafe','USB-C'],
+   specs:{'顯示器':'6.1 吋 Super Retina XDR OLED','晶片':'A18','主相機':'48MP 廣角 + 12MP 超廣角','前鏡頭':'12MP TrueDepth','儲存空間':'128GB / 256GB / 512GB','連接埠':'USB-C (USB 3)','電池':'最長 22 小時影片播放','5G':'支援','重量':'170g'}},
+
+  {id:'ip15',name:'iPhone 15',cat:'iPhone',emoji:'📱',
+   tagline:'新視野。',price:'NT$25,900 起',
+   desc:'Dynamic Island 設計、USB-C 介面、48MP 主鏡頭，A16 晶片，首度採用 USB-C 連接埠。',
+   feats:['A16 晶片','Dynamic Island','USB-C','48MP 主鏡頭','MagSafe'],
+   specs:{'顯示器':'6.1 吋 Super Retina XDR OLED','晶片':'A16','儲存空間':'128GB / 256GB / 512GB','連接埠':'USB-C'}},
+
+  {id:'ip15plus',name:'iPhone 15 Plus',cat:'iPhone',emoji:'📱',
+   tagline:'大螢幕。大電量。',price:'NT$29,900 起',
+   desc:'6.7 吋大螢幕、超長電池續航、48MP 主鏡頭、Dynamic Island，首款搭載 USB-C 的 Plus 機型。',
+   feats:['A16 晶片','6.7 吋 OLED','Dynamic Island','USB-C','MagSafe'],
+   specs:{'顯示器':'6.7 吋 Super Retina XDR OLED','晶片':'A16','主相機':'48MP 廣角 + 12MP 超廣角','前鏡頭':'12MP TrueDepth','儲存空間':'128GB / 256GB / 512GB','連接埠':'USB-C','電池':'最長 26 小時影片播放','5G':'支援','重量':'201g'}},
+
+  {id:'ip15promax',name:'iPhone 15 Pro Max',cat:'iPhone',emoji:'📱',
+   tagline:'鈦金屬。遊戲主機等級。',price:'NT$46,900 起',
+   desc:'5× 潛望式長焦、A17 Pro 晶片、鈦金屬機身、Action Button，首款支援 USB 3 的 iPhone。',
+   feats:['A17 Pro 晶片','5× 潛望式長焦','鈦金屬機身','Action Button','USB 3','MagSafe'],
+   specs:{'顯示器':'6.7 吋 Super Retina XDR OLED (ProMotion 120Hz)','晶片':'A17 Pro','主相機':'48MP 廣角 + 12MP 超廣角 + 12MP 5× 長焦','前鏡頭':'12MP TrueDepth','儲存空間':'256GB / 512GB / 1TB','連接埠':'USB 3 (Type-C)','電池':'最長 29 小時影片播放','5G':'支援','重量':'221g'}},
+
+  {id:'ip14promax',name:'iPhone 14 Pro Max',cat:'iPhone',emoji:'📱',
+   tagline:'Dynamic Island。全新登場。',price:'（已停售）',
+   desc:'首款搭載 Dynamic Island 與 Always-On 顯示功能的 iPhone，6.7 吋 ProMotion OLED，A16 晶片。',
+   feats:['A16 晶片','Dynamic Island','Always-On 顯示','ProMotion 120Hz','48MP 主鏡頭','Emergency SOS 衛星'],
+   specs:{'顯示器':'6.7 吋 Super Retina XDR OLED (ProMotion 120Hz)','晶片':'A16','主相機':'48MP 廣角 + 12MP 超廣角 + 12MP 3× 長焦','前鏡頭':'12MP TrueDepth','儲存空間':'128GB / 256GB / 512GB / 1TB','連接埠':'Lightning','電池':'最長 29 小時影片播放','重量':'240g'}},
+
+  {id:'ip14pro',name:'iPhone 14 Pro',cat:'iPhone',emoji:'📱',
+   tagline:'智慧小島，動感登場。',price:'（已停售）',
+   desc:'Dynamic Island 與 Always-On 顯示，6.1 吋 ProMotion，A16 晶片，碰撞偵測與衛星緊急求救。',
+   feats:['A16 晶片','Dynamic Island','Always-On','ProMotion 120Hz','碰撞偵測','衛星求救'],
+   specs:{'顯示器':'6.1 吋 Super Retina XDR OLED (ProMotion 120Hz)','晶片':'A16','主相機':'48MP 廣角 + 12MP 超廣角 + 12MP 3× 長焦','前鏡頭':'12MP TrueDepth','儲存空間':'128GB / 256GB / 512GB / 1TB','連接埠':'Lightning','電池':'最長 23 小時影片播放','重量':'206g'}},
+
+  {id:'ip14plus',name:'iPhone 14 Plus',cat:'iPhone',emoji:'📱',
+   tagline:'大螢幕。超長電量。',price:'（已停售）',
+   desc:'6.7 吋大螢幕搭載 A15 晶片，超長電池續航，取代 Pro Max 成為親民大螢幕選擇。',
+   feats:['A15 晶片','6.7 吋 OLED','碰撞偵測','衛星求救','MagSafe'],
+   specs:{'顯示器':'6.7 吋 Super Retina XDR OLED','晶片':'A15','主相機':'12MP 廣角 + 12MP 超廣角','前鏡頭':'12MP TrueDepth','儲存空間':'128GB / 256GB / 512GB','連接埠':'Lightning','電池':'最長 26 小時影片播放','重量':'203g'}},
+
+  {id:'ip14',name:'iPhone 14',cat:'iPhone',emoji:'📱',
+   tagline:'安全新突破。',price:'（已停售）',
+   desc:'碰撞偵測、衛星緊急求救、前鏡頭自動對焦，A15 晶片搭配 6.1 吋 OLED。',
+   feats:['A15 晶片','碰撞偵測','衛星緊急求救','前鏡頭自動對焦','MagSafe'],
+   specs:{'顯示器':'6.1 吋 Super Retina XDR OLED','晶片':'A15','主相機':'12MP 廣角 + 12MP 超廣角','前鏡頭':'12MP TrueDepth（自動對焦）','儲存空間':'128GB / 256GB / 512GB','連接埠':'Lightning','電池':'最長 20 小時影片播放','重量':'172g'}},
+
+  {id:'ip13promax',name:'iPhone 13 Pro Max',cat:'iPhone',emoji:'📱',
+   tagline:'Pro 攝影系統，全面進化。',price:'（已停售）',
+   desc:'首款搭載 ProMotion 自適應 120Hz 螢幕的 iPhone，微距攝影與電影模式正式加入。',
+   feats:['A15 晶片','ProMotion 120Hz','微距攝影','電影模式','3× 長焦','MagSafe'],
+   specs:{'顯示器':'6.7 吋 Super Retina XDR OLED (ProMotion 1–120Hz)','晶片':'A15','主相機':'12MP 廣角 + 12MP 超廣角 + 12MP 3× 長焦','前鏡頭':'12MP TrueDepth','儲存空間':'128GB / 256GB / 512GB / 1TB','連接埠':'Lightning','電池':'最長 28 小時影片播放','重量':'238g'}},
+
+  {id:'ip13pro',name:'iPhone 13 Pro',cat:'iPhone',emoji:'📱',
+   tagline:'Pro 鏡頭。Pro 效能。',price:'（已停售）',
+   desc:'A15 晶片、ProMotion 120Hz、微距鏡頭、電影模式，首次提供 1TB 儲存空間。',
+   feats:['A15 晶片','ProMotion 120Hz','微距攝影','電影模式'],
+   specs:{'顯示器':'6.1 吋 Super Retina XDR OLED (ProMotion 1–120Hz)','晶片':'A15','主相機':'12MP 廣角 + 12MP 超廣角 + 12MP 3× 長焦','前鏡頭':'12MP TrueDepth','儲存空間':'128GB / 256GB / 512GB / 1TB','連接埠':'Lightning','電池':'最長 22 小時影片播放','重量':'203g'}},
+
+  {id:'ip13',name:'iPhone 13',cat:'iPhone',emoji:'📱',
+   tagline:'你的新主力。',price:'（已停售）',
+   desc:'A15 晶片、電影模式、更大電池容量，對角線排列雙鏡頭，支援 MagSafe。',
+   feats:['A15 晶片','電影模式','對角雙鏡頭','更大電池','MagSafe'],
+   specs:{'顯示器':'6.1 吋 Super Retina XDR OLED','晶片':'A15','主相機':'12MP 廣角 + 12MP 超廣角','前鏡頭':'12MP TrueDepth','儲存空間':'128GB / 256GB / 512GB','連接埠':'Lightning','電池':'最長 19 小時影片播放','重量':'174g'}},
+
+  {id:'ip13mini',name:'iPhone 13 mini',cat:'iPhone',emoji:'📱',
+   tagline:'小機身。大進化。',price:'（已停售）',
+   desc:'最後一代 mini 機型，A15 晶片，5.4 吋 OLED，更大電池比前代提升 20%。',
+   feats:['A15 晶片','5.4 吋 OLED','電影模式','MagSafe'],
+   specs:{'顯示器':'5.4 吋 Super Retina XDR OLED','晶片':'A15','主相機':'12MP 廣角 + 12MP 超廣角','前鏡頭':'12MP TrueDepth','儲存空間':'128GB / 256GB / 512GB','連接埠':'Lightning','電池':'最長 17 小時影片播放','重量':'141g'}},
+
+  {id:'ip12promax',name:'iPhone 12 Pro Max',cat:'iPhone',emoji:'📱',
+   tagline:'5G。閃耀人心。',price:'（已停售）',
+   desc:'首款搭載 5G 的 Pro Max，感光元件尺寸提升 47%，OIS 光學防手震升級，A14 晶片。',
+   feats:['A14 晶片','5G','感光元件 +47%','OIS 防手震','ProRAW 支援'],
+   specs:{'顯示器':'6.7 吋 Super Retina XDR OLED','晶片':'A14','主相機':'12MP 廣角 + 12MP 超廣角 + 12MP 2.5× 長焦','前鏡頭':'12MP TrueDepth','儲存空間':'128GB / 256GB / 512GB','連接埠':'Lightning','電池':'最長 20 小時影片播放','5G':'支援','重量':'228g'}},
+
+  {id:'ip12',name:'iPhone 12',cat:'iPhone',emoji:'📱',
+   tagline:'5G 時代正式開始。',price:'（已停售）',
+   desc:'首款 5G iPhone，全新扁平邊框設計，Ceramic Shield 螢幕，A14 Bionic，支援 MagSafe。',
+   feats:['A14 Bionic','5G','Ceramic Shield','MagSafe','扁平邊框設計'],
+   specs:{'顯示器':'6.1 吋 Super Retina XDR OLED','晶片':'A14','主相機':'12MP 廣角 + 12MP 超廣角','前鏡頭':'12MP TrueDepth','儲存空間':'64GB / 128GB / 256GB','連接埠':'Lightning','電池':'最長 17 小時影片播放','5G':'支援','重量':'164g'}},
+
+  {id:'ip12mini',name:'iPhone 12 mini',cat:'iPhone',emoji:'📱',
+   tagline:'小，更小。5G，更快。',price:'（已停售）',
+   desc:'5.4 吋 5G 小螢幕 iPhone，A14 晶片，MagSafe，扁平設計，是當年最小 5G 手機。',
+   feats:['A14 Bionic','5G','5.4 吋 OLED','MagSafe'],
+   specs:{'顯示器':'5.4 吋 Super Retina XDR OLED','晶片':'A14','主相機':'12MP 廣角 + 12MP 超廣角','前鏡頭':'12MP TrueDepth','儲存空間':'64GB / 128GB / 256GB','連接埠':'Lightning','電池':'最長 15 小時影片播放','5G':'支援','重量':'133g'}},
+
+  {id:'ipse2020',name:'iPhone SE（第 2 代）',cat:'iPhone',emoji:'📱',
+   tagline:'熟悉的外型。全新的效能。',price:'（已停售）',
+   desc:'2020 年 4 月發表，沿用 iPhone 8 外觀，搭載 A13 晶片，Touch ID Home 鍵，支援 MagSafe。',
+   feats:['A13 Bionic','Touch ID','4.7 吋 Retina HD','MagSafe','智慧 HDR'],
+   specs:{'顯示器':'4.7 吋 Retina HD LCD','晶片':'A13','主相機':'12MP 廣角','前鏡頭':'7MP FaceTime','儲存空間':'64GB / 128GB / 256GB','連接埠':'Lightning','電池':'最長 13 小時影片播放','重量':'148g'}},
+
+  {id:'ipse2022',name:'iPhone SE（第 3 代）',cat:'iPhone',emoji:'📱',
+   tagline:'強大效能。超值之選。',price:'（已停售）',
+   desc:'2022 年搭載 A15 晶片，加入 5G，維持 Touch ID 與 4.7 吋設計，是最親民的 5G iPhone。',
+   feats:['A15 Bionic','5G','Touch ID','4.7 吋 Retina HD','MagSafe'],
+   specs:{'顯示器':'4.7 吋 Retina HD LCD','晶片':'A15','主相機':'12MP 廣角','前鏡頭':'7MP FaceTime','儲存空間':'64GB / 128GB / 256GB','連接埠':'Lightning','電池':'最長 15 小時影片播放','5G':'支援','重量':'144g'}},
+
+
+  /* ── 即將發售 / 未發售 ── */
+
+
+
+
+  /* ── Mac 2026 ── */
+  {id:'mba-m5-13',name:'MacBook Air 13" M5',cat:'Mac',emoji:'💻',
+   tagline:'極致輕薄。全新強悍。',price:'NT$35,900 起',
+   desc:'搭載 Apple M5 晶片的 MacBook Air，2026 年 3 月發表，10 核心 CPU，基礎配備 512GB，最高可達 32GB 記憶體與 4TB 儲存空間。',
+   feats:['Apple M5 晶片','10 核心 CPU / 8 核心 GPU (起)','16GB 統一記憶體 (起)','512GB SSD (起)','MagSafe 3','最長 18 小時電池','Liquid Retina 顯示器','Wi-Fi 7'],
+   specs:{'晶片':'Apple M5','CPU':'10 核心','GPU':'8 核心 / 10 核心','記憶體':'16GB / 24GB / 32GB','儲存空間':'512GB / 1TB / 2TB / 4TB','顯示器':'13.6 吋 Liquid Retina','電池':'最長 18 小時','連接埠':'MagSafe 3 + 2× USB 4 + 3.5mm','重量':'1.24 kg'}},
+
+  {id:'mba-m5-15',name:'MacBook Air 15" M5',cat:'Mac',emoji:'💻',
+   tagline:'更大螢幕。更強效能。',price:'NT$42,900 起',
+   desc:'15 吋 Liquid Retina 螢幕搭載 M5 晶片，完美兼顧可攜性與生產力，適合需要大螢幕的輕度到中度使用者。',
+   feats:['Apple M5 晶片','15.3 吋 Liquid Retina','10 核心 CPU / 10 核心 GPU','16GB 起','Wi-Fi 7','MagSafe 3'],
+   specs:{'晶片':'Apple M5','CPU':'10 核心','GPU':'10 核心','記憶體':'16GB / 24GB / 32GB','儲存空間':'512GB / 1TB / 2TB / 4TB','顯示器':'15.3 吋 Liquid Retina','電池':'最長 18 小時','重量':'1.51 kg'}},
+
+  {id:'mbp-m5pro-14',name:'MacBook Pro 14" M5 Pro',cat:'Mac',emoji:'💻',
+   tagline:'Pro 效能。隨身攜帶。',price:'NT$74,900 起',
+   desc:'M5 Pro 晶片搭配 14 吋 Liquid Retina XDR 顯示器，18 核心 CPU，適合影像後期、音樂製作與開發者。',
+   feats:['Apple M5 Pro 晶片','18 核心 CPU / 20 核心 GPU','24GB 統一記憶體 (起)','Liquid Retina XDR','HDMI + SD Card','MagSafe 3'],
+   specs:{'晶片':'Apple M5 Pro','CPU':'18 核心','GPU':'20 核心','記憶體':'24GB / 48GB','儲存空間':'1TB / 2TB / 4TB','顯示器':'14.2 吋 Liquid Retina XDR','電池':'最長 17 小時','重量':'1.62 kg'}},
+
+  {id:'mbp-m5max-16',name:'MacBook Pro 16" M5 Max',cat:'Mac',emoji:'💻',
+   tagline:'極致效能。無可匹敵。',price:'NT$119,900 起',
+   desc:'M5 Max 晶片搭載 16 吋 Liquid Retina XDR 螢幕，最高 128GB 統一記憶體，為最苛刻的專業工作流程而設計。',
+   feats:['Apple M5 Max 晶片','18 核心 CPU / 40 核心 GPU','最高 128GB 記憶體','Liquid Retina XDR','Thunderbolt 5','Wi-Fi 7'],
+   specs:{'晶片':'Apple M5 Max','CPU':'18 核心','GPU':'40 核心','記憶體':'48GB / 64GB / 128GB','儲存空間':'1TB / 2TB / 4TB / 8TB','顯示器':'16.2 吋 Liquid Retina XDR','電池':'最長 22 小時','重量':'2.15 kg'}},
+
+  {id:'mbp-m4pro-14',name:'MacBook Pro 14" M4 Pro',cat:'Mac',emoji:'💻',
+   tagline:'Pro 晶片。Pro 顯示器。',price:'NT$64,900 起',
+   desc:'M4 Pro 晶片，14 吋 Liquid Retina XDR，效能躍升同時兼顧全日電池續航。',
+   feats:['Apple M4 Pro','14.2 吋 Liquid Retina XDR','最高 24 核心 GPU','MagSafe 3','HDMI 2.1','SD 卡槽'],
+   specs:{'晶片':'Apple M4 Pro','CPU':'14 核心','GPU':'20 核心','記憶體':'24GB / 48GB','儲存空間':'512GB–4TB','顯示器':'14.2 吋 Liquid Retina XDR','電池':'最長 17 小時'}},
+
+  {id:'imac-m4',name:'iMac M4',cat:'Mac',emoji:'🖥️',
+   tagline:'強大效能。薄如一片。',price:'NT$44,900 起',
+   desc:'M4 晶片驅動的 24 吋 iMac，超薄機身、4.5K 視網膜顯示器，7 種色彩，是桌上型電腦的完美首選。',
+   feats:['Apple M4 晶片','24 吋 4.5K Retina','最高 32GB 記憶體','3× USB 4 (Thunderbolt)','Wi-Fi 7','Nano-texture 選項'],
+   specs:{'晶片':'Apple M4','顯示器':'24 吋 4.5K Retina','CPU':'10 核心','GPU':'10 核心','記憶體':'16GB / 24GB / 32GB','儲存空間':'256GB / 512GB / 1TB / 2TB'}},
+
+  {id:'macmini-m4',name:'Mac mini M4',cat:'Mac',emoji:'🖥️',
+   tagline:'超強效能。超小體積。',price:'NT$19,900 起',
+   desc:'史上最小的 Mac mini，搭載 M4 或 M4 Pro 晶片，效能提升卻比前代更小巧，最多支援 3 台顯示器。',
+   feats:['Apple M4 / M4 Pro','最多 3 台顯示器','前方 USB-C 連接埠','Wi-Fi 7','最小 Mac mini 機身'],
+   specs:{'晶片':'Apple M4 / M4 Pro','記憶體':'16GB / 24GB / 48GB','儲存空間':'256GB / 512GB / 1TB / 2TB','連接埠':'3× USB-C (後) + 2× USB-C (前) + HDMI + 2× USB-A + Ethernet'}},
+
+  {id:'macstudio-m4',name:'Mac Studio M4 Max',cat:'Mac',emoji:'🖥️',
+   tagline:'工作室等級。桌上型效能。',price:'NT$69,900 起',
+   desc:'M4 Max 或 M4 Ultra 晶片，2025 年發表，12 個 Thunderbolt 5 連接埠，適合影像、音樂與科學計算。',
+   feats:['Apple M4 Max / M4 Ultra','Thunderbolt 5','最高 192GB 統一記憶體','Wi-Fi 7','最多 5 台顯示器'],
+   specs:{'晶片':'Apple M4 Max / M4 Ultra','CPU':'最高 28 核心','GPU':'最高 80 核心','記憶體':'36GB / 64GB / 128GB / 192GB','儲存空間':'512GB ~ 16TB','連接埠':'6× Thunderbolt 5 (後) + 2× Thunderbolt 5 (前) + HDMI + 3× USB-A + SD'}},
+
+  {id:'macstudio-m2',name:'Mac Studio M2 Max',cat:'Mac',emoji:'🖥️',
+   tagline:'Pro 桌機。再次進化。',price:'（已停售）',
+   desc:'M2 Max 或 M2 Ultra，2023 年發表，12 個 Thunderbolt 4，是 Mac Studio 第二代機型。',
+   feats:['Apple M2 Max / M2 Ultra','Thunderbolt 4','最高 192GB 統一記憶體'],
+   specs:{'晶片':'Apple M2 Max / M2 Ultra','記憶體':'32GB ~ 192GB','儲存空間':'512GB ~ 8TB'}},
+
+  {id:'macpro-m4',name:'Mac Pro M4 Ultra',cat:'Mac',emoji:'🖥️',
+   tagline:'終極工作站。',price:'NT$249,900 起',
+   desc:'M4 Ultra 晶片，2025 年發表，最高 512GB 統一記憶體，6 個 PCIe 插槽，為最苛刻的專業工作流程設計。',
+   feats:['Apple M4 Ultra','最高 512GB 統一記憶體','6× PCIe 插槽','Thunderbolt 5','Mac Pro 機箱'],
+   specs:{'晶片':'Apple M4 Ultra','CPU':'28 核心','GPU':'80 核心','記憶體':'192GB / 384GB / 512GB','儲存空間':'1TB ~ 8TB','PCIe':'6× 插槽'}},
+
+  {id:'mba-m4-13',name:'MacBook Air 13" M4',cat:'Mac',emoji:'💻',
+   tagline:'空氣般輕薄。M4 強力驅動。',price:'NT$34,900 起',
+   desc:'2025 年 3 月發表的 MacBook Air M4，10 核心 CPU，基礎 16GB 記憶體，支援最多 2 台外接顯示器。',
+   feats:['Apple M4 晶片','10 核心 CPU / 10 核心 GPU','16GB 起','Center Stage 前鏡頭','MagSafe 3','Wi-Fi 6E'],
+   specs:{'晶片':'Apple M4','CPU':'10 核心','記憶體':'16GB / 24GB / 32GB','儲存空間':'256GB / 512GB / 1TB / 2TB','顯示器':'13.6 吋 Liquid Retina','電池':'最長 18 小時','重量':'1.24 kg'}},
+
+  {id:'mba-m3-13',name:'MacBook Air 13" M3',cat:'Mac',emoji:'💻',
+   tagline:'首款支援雙螢幕的 Air。',price:'（已停售）',
+   desc:'2024 年 M3 MacBook Air，首次支援 2 台外接顯示器（蓋上時），Wi-Fi 6E，更快的 M3 晶片。',
+   feats:['Apple M3 晶片','支援 2 台外接顯示器','Wi-Fi 6E','MagSafe 3','AirPlay 接收'],
+   specs:{'晶片':'Apple M3','CPU':'8 核心','GPU':'10 核心','記憶體':'8GB / 16GB / 24GB','儲存空間':'256GB / 512GB / 1TB / 2TB','顯示器':'13.6 吋 Liquid Retina (2560×1664)','連接埠':'MagSafe 3 + 2× USB 4 + 3.5mm','電池':'最長 18 小時','重量':'1.24 kg','Wi-Fi':'Wi-Fi 6E'}},
+
+  {id:'mba-m2-13',name:'MacBook Air 13" M2',cat:'Mac',emoji:'💻',
+   tagline:'全新設計。全新開始。',price:'（已停售）',
+   desc:'2022 年全新設計，無風扇、Liquid Retina 顯示器、MagSafe 回歸、劉海前鏡頭，M2 晶片。',
+   feats:['Apple M2 晶片','Liquid Retina 顯示器','MagSafe 3 回歸','劉海前鏡頭','無風扇設計'],
+   specs:{'晶片':'Apple M2','CPU':'8 核心','GPU':'8 / 10 核心','記憶體':'8GB / 16GB / 24GB','儲存空間':'256GB / 512GB / 1TB / 2TB','顯示器':'13.6 吋 Liquid Retina (2560×1664)','連接埠':'MagSafe 3 + 2× USB 4 + 3.5mm','電池':'最長 18 小時','重量':'1.24 kg','Wi-Fi':'Wi-Fi 6'}},
+
+  {id:'mba-m1',name:'MacBook Air M1',cat:'Mac',emoji:'💻',
+   tagline:'歷史性的一躍。',price:'（已停售）',
+   desc:'2020 年 11 月，首款搭載 Apple Silicon M1 的 MacBook Air，無風扇、超長電池，開啟 Apple 自研晶片新時代。',
+   feats:['Apple M1 晶片（首款）','無風扇靜音設計','最長 18 小時電池','Touch ID','Retina 顯示器'],
+   specs:{'晶片':'Apple M1','CPU':'8 核心','GPU':'7 / 8 核心','記憶體':'8GB / 16GB','儲存空間':'256GB / 512GB / 1TB / 2TB','顯示器':'13.3 吋 Retina (2560×1600)','連接埠':'2× USB 4 (Thunderbolt) + 3.5mm + MagSafe','電池':'最長 18 小時','重量':'1.29 kg','Wi-Fi':'Wi-Fi 6'}},
+
+  {id:'mbp-m3-14',name:'MacBook Pro 14" M3',cat:'Mac',emoji:'💻',
+   tagline:'基礎 Pro，全面升級。',price:'（已停售）',
+   desc:'2023 年搭載 M3 晶片的 14 吋 MacBook Pro，首款 Pro 系列使用 Space Black 色彩選項。',
+   feats:['Apple M3 晶片','Liquid Retina XDR','Space Black 配色','Wi-Fi 6E','MagSafe 3'],
+   specs:{'晶片':'Apple M3','CPU':'8 核心','GPU':'10 核心','記憶體':'8GB / 16GB / 24GB','儲存空間':'512GB / 1TB / 2TB','顯示器':'14.2 吋 Liquid Retina XDR (ProMotion 120Hz)','連接埠':'2× USB 4 + HDMI 2.1 + SD + MagSafe 3 + 3.5mm','電池':'最長 12 小時','重量':'1.55 kg','Wi-Fi':'Wi-Fi 6E'}},
+
+  {id:'mbp-m2-13',name:'MacBook Pro 13" M2',cat:'Mac',emoji:'💻',
+   tagline:'Pro 效能。極致靜音。',price:'（已停售）',
+   desc:'2022 年 M2 晶片入門 Pro，Touch Bar 最後世代，無風扇設計，ProRes 加速器。',
+   feats:['Apple M2 晶片','Touch Bar（最後世代）','媒體引擎','ProRes 加速','無風扇'],
+   specs:{'晶片':'Apple M2','CPU':'8 核心','GPU':'10 核心','記憶體':'8GB / 16GB / 24GB','儲存空間':'256GB / 512GB / 1TB / 2TB','顯示器':'13.3 吋 Retina (2560×1600)','連接埠':'2× USB 4 (Thunderbolt) + 3.5mm + MagSafe 2','電池':'最長 20 小時','重量':'1.4 kg'}},
+
+  {id:'mbp-m1pro-16',name:'MacBook Pro 16" M1 Pro/Max',cat:'Mac',emoji:'💻',
+   tagline:'怪物級效能。隨身攜帶。',price:'（已停售）',
+   desc:'2021 年重新設計，刪除 Touch Bar、加回 HDMI 與 SD 卡槽、MagSafe 回歸，M1 Pro/Max 晶片。',
+   feats:['Apple M1 Pro / M1 Max','16.2 吋 Liquid Retina XDR','HDMI + SD + MagSafe 回歸','Mini-LED ProMotion'],
+   specs:{'晶片':'Apple M1 Pro / M1 Max','CPU':'10 / 10 核心','GPU':'16 / 32 核心','記憶體':'16GB / 32GB / 64GB','儲存空間':'512GB ~ 8TB','顯示器':'16.2 吋 Liquid Retina XDR (ProMotion 120Hz)','連接埠':'3× Thunderbolt 4 + HDMI + SD + MagSafe 3 + 3.5mm','電池':'最長 21 小時','重量':'2.15 kg'}},
+
+  {id:'imac-m3',name:'iMac M3',cat:'Mac',emoji:'🖥️',
+   tagline:'強大效能。七彩繽紛。',price:'（已停售）',
+   desc:'2023 年 iMac，M3 晶片，延續 24 吋 4.5K Retina 設計，加入 Wi-Fi 6E 與 Bluetooth 5.3。',
+   feats:['Apple M3 晶片','24 吋 4.5K Retina','Wi-Fi 6E','Bluetooth 5.3'],
+   specs:{'晶片':'Apple M3','顯示器':'24 吋 4.5K Retina','記憶體':'8GB / 16GB / 24GB','儲存空間':'256GB / 512GB / 1TB / 2TB'}},
+
+  {id:'imac-m1',name:'iMac M1',cat:'Mac',emoji:'🖥️',
+   tagline:'Hello again。七種顏色。',price:'（已停售）',
+   desc:'2021 年全新設計，7 種顏色，厚度僅 11.5mm，M1 晶片，4.5K 視網膜顯示器，搭配彩色配件。',
+   feats:['Apple M1 晶片','24 吋 4.5K Retina','11.5mm 超薄','7 種顏色','1080p FaceTime 前鏡頭'],
+   specs:{'晶片':'Apple M1','顯示器':'24 吋 4.5K Retina','記憶體':'8GB / 16GB','儲存空間':'256GB / 512GB / 1TB / 2TB'}},
+
+  {id:'macmini-m2',name:'Mac mini M2',cat:'Mac',emoji:'🖥️',
+   tagline:'比想像中更快。',price:'（已停售）',
+   desc:'2023 年 Mac mini，M2 或 M2 Pro 晶片，加入 HDMI 2.1、Wi-Fi 6E，首款支援 2 台 Thunderbolt 顯示器。',
+   feats:['Apple M2 / M2 Pro','Wi-Fi 6E','HDMI 2.1','最多 3 台顯示器'],
+   specs:{'晶片':'Apple M2 / M2 Pro','記憶體':'8GB ~ 32GB','儲存空間':'256GB ~ 8TB'}},
+
+  {id:'macmini-m1',name:'Mac mini M1',cat:'Mac',emoji:'🖥️',
+   tagline:'小而強大。全新起點。',price:'（已停售）',
+   desc:'2020 年首款 M1 Mac mini，效能大幅超越前代 Intel 版本，維持緊湊機身設計。',
+   feats:['Apple M1 晶片','Thunderbolt / USB 4','最長整日使用','緊湊機身'],
+   specs:{'晶片':'Apple M1','記憶體':'8GB / 16GB','儲存空間':'256GB / 512GB / 1TB / 2TB'}},
+
+  /* ── iPad ── */
+  {id:'ipadair13-m4-2026',name:'iPad Air 13" M4 (2026)',cat:'iPad',emoji:'📱',
+   tagline:'更快。更聰明。更精彩。',price:'NT$26,900 起',
+   desc:'2026 年最新 iPad Air 13 吋，搭載 M4 晶片、12GB 記憶體、Wi-Fi 7 與 C1X 數據晶片，支援 Apple Pencil Pro 與 Magic Keyboard。',
+   feats:['Apple M4 晶片','12GB 統一記憶體','Wi-Fi 7','C1X 蜂巢式數據晶片','Apple Pencil Pro 支援','Magic Keyboard 支援'],
+   specs:{'顯示器':'13 吋 Liquid Retina','晶片':'Apple M4','記憶體':'12GB','儲存空間':'128GB / 256GB / 512GB / 1TB','連接埠':'USB-C (USB 3)','Wi-Fi':'Wi-Fi 7'}},
+
+  {id:'ipadair11-m4-2026',name:'iPad Air 11" M4 (2026)',cat:'iPad',emoji:'📱',
+   tagline:'輕盈強大。全面升級。',price:'NT$19,900 起',
+   desc:'2026 年 iPad Air 11 吋，M4 晶片搭配 12GB 記憶體，Wi-Fi 7，是理想的日常生產力工具。',
+   feats:['Apple M4 晶片','12GB 統一記憶體','Wi-Fi 7','Apple Pencil Pro 支援','輕薄設計'],
+   specs:{'顯示器':'11 吋 Liquid Retina','晶片':'Apple M4','記憶體':'12GB','儲存空間':'128GB / 256GB / 512GB / 1TB','連接埠':'USB-C (USB 3)','Wi-Fi':'Wi-Fi 7'}},
+
+  {id:'ipadpro13-m4',name:'iPad Pro 13" M4',cat:'iPad',emoji:'📱',
+   tagline:'最薄 Apple 產品。空前強大。',price:'NT$43,900 起',
+   desc:'Ultra Retina XDR OLED 螢幕，M4 晶片，Apple Pencil Pro 支援，史上最薄 Apple 裝置之一。',
+   feats:['Apple M4 晶片','Ultra Retina XDR OLED','Apple Pencil Pro','Tandem OLED 技術','Thunderbolt / USB 4'],
+   specs:{'顯示器':'13 吋 Ultra Retina XDR OLED','晶片':'Apple M4','記憶體':'8GB / 16GB','儲存空間':'256GB / 512GB / 1TB / 2TB','連接埠':'Thunderbolt / USB 4'}},
+
+  {id:'ipadpro11-m4',name:'iPad Pro 11" M4',cat:'iPad',emoji:'📱',
+   tagline:'輕薄進化。智慧再升級。',price:'NT$32,900 起',
+   desc:'M4 晶片搭配 OLED 螢幕，Thunderbolt 連接，是最強大的 11 吋平板。',
+   feats:['Apple M4 晶片','Ultra Retina XDR OLED','Apple Pencil Pro','Thunderbolt / USB 4'],
+   specs:{'顯示器':'11 吋 Ultra Retina XDR OLED','晶片':'Apple M4','記憶體':'8GB / 16GB','儲存空間':'256GB / 512GB / 1TB / 2TB','連接埠':'Thunderbolt / USB 4'}},
+
+  {id:'ipadpro11-m2',name:'iPad Pro 11" M2',cat:'iPad',emoji:'📱',
+   tagline:'飛速。筆觸。神奇。',price:'（已停售）',
+   desc:'M2 晶片，Apple Pencil 懸浮功能，Wi-Fi 6E，ProRes 影片拍攝，USB 4 連接。',
+   feats:['Apple M2 晶片','Apple Pencil 懸浮','ProRes 影片','Wi-Fi 6E','USB 4'],
+   specs:{'顯示器':'11 吋 Liquid Retina (2388×1668, 264ppi)','晶片':'Apple M2','記憶體':'8GB / 16GB','儲存空間':'128GB / 256GB / 512GB / 1TB / 2TB','連接埠':'USB 4 (Type-C)','相機':'12MP 廣角 + 10MP 超廣角','前鏡頭':'12MP TrueDepth','Wi-Fi':'Wi-Fi 6E','5G':'選配','重量':'466g (Wi-Fi)'}},
+
+  {id:'ipadair-m2-2024',name:'iPad Air 11" M2 (2024)',cat:'iPad',emoji:'📱',
+   tagline:'首款 iPad Air 13 吋。',price:'NT$19,900 起',
+   desc:'2024 年 iPad Air，首次推出 13 吋選項，M2 晶片，橫向 FaceTime 鏡頭，支援 Apple Pencil Pro。',
+   feats:['Apple M2 晶片','橫向 FaceTime 鏡頭','Apple Pencil Pro 支援','USB-C','Wi-Fi 6E'],
+   specs:{'顯示器':'11 吋 Liquid Retina','晶片':'Apple M2','記憶體':'8GB','儲存空間':'128GB / 256GB / 512GB / 1TB','連接埠':'USB-C (USB 3)'}},
+
+  {id:'ipadair13-m2-2024',name:'iPad Air 13" M2 (2024)',cat:'iPad',emoji:'📱',
+   tagline:'全新 13 吋登場。',price:'NT$27,900 起',
+   desc:'首款 13 吋 iPad Air，M2 晶片，大螢幕滿足創作需求，支援 Apple Pencil Pro。',
+   feats:['Apple M2 晶片','13 吋 Liquid Retina（首款）','Apple Pencil Pro','橫向鏡頭'],
+   specs:{'顯示器':'13 吋 Liquid Retina','晶片':'Apple M2','儲存空間':'128GB / 256GB / 512GB / 1TB','連接埠':'USB-C (USB 3)'}},
+
+  {id:'ipadmini7',name:'iPad mini（第 7 代）',cat:'iPad',emoji:'📱',
+   tagline:'迷你。強大。',price:'NT$16,900 起',
+   desc:'2024 年 iPad mini 第 7 代，A17 Pro 晶片，首次支援 Apple Intelligence，Wi-Fi 7。',
+   feats:['A17 Pro 晶片','Apple Intelligence','Wi-Fi 7','Apple Pencil Pro 支援'],
+   specs:{'顯示器':'8.3 吋 Liquid Retina','晶片':'A17 Pro','儲存空間':'128GB / 256GB / 512GB','連接埠':'USB-C'}},
+
+  {id:'ipadmini6',name:'iPad mini（第 6 代）',cat:'iPad',emoji:'📱',
+   tagline:'大能量。迷你造型。',price:'（已停售）',
+   desc:'2021 年全新設計，全螢幕外觀、USB-C、Touch ID 移至頂部電源鍵，A15 晶片，5G 可選。',
+   feats:['A15 Bionic','全螢幕設計','Touch ID（頂部）','USB-C','5G 選項'],
+   specs:{'顯示器':'8.3 吋 Liquid Retina (2266×1488, 326ppi)','晶片':'A15','記憶體':'4GB','儲存空間':'64GB / 256GB','連接埠':'USB-C','前鏡頭':'12MP 超廣角 (Centre Stage)','後鏡頭':'12MP 廣角','Wi-Fi':'Wi-Fi 6','5G':'選配','重量':'293g (Wi-Fi)'}},
+
+  {id:'ipad11th',name:'iPad（第 11 代）',cat:'iPad',emoji:'📱',
+   tagline:'多才多藝。',price:'NT$11,900 起',
+   desc:'2025 年入門 iPad，A16 晶片，支援 Apple Intelligence，首次支援 Apple Pencil Pro。',
+   feats:['A16 晶片','Apple Intelligence','Apple Pencil Pro 支援','Wi-Fi 6E'],
+   specs:{'顯示器':'10.9 吋 Liquid Retina (2360×1640, 264ppi)','晶片':'A16','記憶體':'8GB','儲存空間':'128GB / 256GB','連接埠':'USB-C','前鏡頭':'12MP TrueDepth（橫向）','後鏡頭':'12MP 廣角','Wi-Fi':'Wi-Fi 6E','重量':'477g (Wi-Fi)'}},
+
+  {id:'ipad10th',name:'iPad（第 10 代）',cat:'iPad',emoji:'📱',
+   tagline:'豐富色彩。全面設計。',price:'（已停售）',
+   desc:'2022 年全新設計，USB-C、橫向鏡頭、Wi-Fi 6，4 種顏色，A14 晶片，告別 Lightning。',
+   feats:['A14 Bionic','USB-C','橫向 FaceTime 鏡頭','4 種顏色','Wi-Fi 6'],
+   specs:{'顯示器':'10.9 吋 Liquid Retina (2360×1640, 264ppi)','晶片':'A14','記憶體':'4GB','儲存空間':'64GB / 256GB','連接埠':'USB-C','前鏡頭':'12MP 超廣角（橫向）','後鏡頭':'12MP 廣角','Wi-Fi':'Wi-Fi 6','重量':'477g (Wi-Fi)'}},
+
+  {id:'ipadair-m1',name:'iPad Air（第 5 代）M1',cat:'iPad',emoji:'📱',
+   tagline:'M1。新突破。',price:'（已停售）',
+   desc:'2022 年首款搭載 M1 晶片的 iPad Air，5G、USB-C、12MP 超廣角前鏡頭。',
+   feats:['Apple M1 晶片','5G','Centre Stage','USB-C','12MP 超廣角前鏡頭'],
+   specs:{'顯示器':'10.9 吋 Liquid Retina (2360×1640, 264ppi)','晶片':'Apple M1','記憶體':'8GB','儲存空間':'64GB / 256GB','連接埠':'USB-C (USB 3.1 Gen 2)','前鏡頭':'12MP 超廣角 (Centre Stage)','後鏡頭':'12MP 廣角','Wi-Fi':'Wi-Fi 6','5G':'選配','重量':'461g (Wi-Fi)'}},
+
+  /* ── Apple Watch ── */
+  {id:'aws10-46',name:'Apple Watch Series 10 46mm',cat:'Apple Watch',emoji:'⌚',
+   tagline:'最大。最薄。最先進。',price:'NT$14,900 起',
+   desc:'史上最薄的 Apple Watch，最大螢幕，支援睡眠呼吸中止症偵測、水深偵測，S10 SiP 晶片帶來更快速流暢的操作體驗。',
+   feats:['S10 SiP 晶片','史上最大螢幕','睡眠呼吸中止症偵測','水深偵測','Fast Charge (80% / 45 分鐘)','雙點手勢'],
+   specs:{'晶片':'S10 SiP','機殼尺寸':'46mm / 42mm','螢幕':'LTPO OLED','防水':'100m 防水','電池':'約 18 小時','連接':'Wi-Fi 4 + Bluetooth 5.3 + UWB'}},
+
+  {id:'awultra2',name:'Apple Watch Ultra 2',cat:'Apple Watch',emoji:'⌚',
+   tagline:'探索極限。永無止境。',price:'NT$29,900 起',
+   desc:'鈦金屬機身，49mm 大螢幕，雙頻 GPS，Precision Finding，專為極限運動與深海探索設計。',
+   feats:['S9 SiP 晶片','鈦金屬 49mm 機身','雙頻 GPS','100m 防水','Action Button','Siren 聲音警報','60 小時電池 (低電量模式)'],
+   specs:{'晶片':'S9 SiP','機殼':'49mm 鈦金屬','防水':'100m','GPS':'L1 + L5 雙頻','電池':'最長 36 小時 (標準) / 60 小時 (低電量)'}},
+
+  {id:'awse-2',name:'Apple Watch SE（第 2 代）',cat:'Apple Watch',emoji:'⌚',
+   tagline:'功能豐富。超值之選。',price:'NT$8,900 起',
+   desc:'Apple Watch SE 搭載 S8 SiP 晶片，跌倒偵測、緊急求救，是入門智慧手錶的理想選擇。',
+   feats:['S8 SiP 晶片','跌倒偵測','緊急求救','Family Setup','心率通知','睡眠追蹤'],
+   specs:{'晶片':'S8 SiP','機殼尺寸':'44mm / 40mm','防水':'50m','電池':'約 18 小時'}},
+
+  {id:'aws9',name:'Apple Watch Series 9',cat:'Apple Watch',emoji:'⌚',
+   tagline:'雙點手勢。輕鬆操作。',price:'（已停售）',
+   desc:'S9 SiP 晶片，首款支援雙點手勢（Precision Finding），更亮的 2000 尼特螢幕，支援 Siri 本機處理。',
+   feats:['S9 SiP 晶片','雙點手勢','2000 尼特亮度','Siri 本機處理','碳中和配件'],
+   specs:{'晶片':'S9 SiP','機殼尺寸':'45mm / 41mm','防水':'50m','電池':'約 18 小時'}},
+
+  {id:'aws8',name:'Apple Watch Series 8',cat:'Apple Watch',emoji:'⌚',
+   tagline:'碰撞偵測。體溫感測。',price:'（已停售）',
+   desc:'S8 SiP 晶片，新增碰撞偵測、腕部體溫感測與 Cycle Tracking 改善，支援衛星緊急求救。',
+   feats:['S8 SiP 晶片','碰撞偵測','體溫感測','衛星緊急求救','Cycle Tracking'],
+   specs:{'晶片':'S8 SiP','機殼尺寸':'45mm / 41mm','防水':'50m','電池':'約 18 小時'}},
+
+  {id:'awultra1',name:'Apple Watch Ultra',cat:'Apple Watch',emoji:'⌚',
+   tagline:'探索的極限。勇者的選擇。',price:'（已停售）',
+   desc:'2022 年首款 Ultra，49mm 鈦金屬，雙頻 GPS，100m 防水，最長 60 小時電池，為極限運動而生。',
+   feats:['S8 SiP 晶片','49mm 鈦金屬','雙頻 GPS','100m 防水','60 小時電池（省電）'],
+   specs:{'晶片':'S8 SiP','機殼':'49mm 鈦金屬','防水':'100m ISO 22810','GPS':'L1 + L5 雙頻','電池':'最長 36 小時 / 60 小時（低電量）'}},
+
+  {id:'aws7',name:'Apple Watch Series 7',cat:'Apple Watch',emoji:'⌚',
+   tagline:'更大螢幕。更快充電。',price:'（已停售）',
+   desc:'2021 年重新設計，更圓弧的螢幕邊緣，螢幕面積提升 20%，支援 33W Fast Charge。',
+   feats:['S7 SiP 晶片','更大顯示面積','IP6X 防塵','Fast Charge','血氧偵測'],
+   specs:{'晶片':'S7 SiP','機殼尺寸':'45mm / 41mm','防水':'50m','電池':'約 18 小時'}},
+
+  {id:'awse-1',name:'Apple Watch SE（第 1 代）',cat:'Apple Watch',emoji:'⌚',
+   tagline:'超值。不將就。',price:'（已停售）',
+   desc:'2020 年首款 SE，S5 晶片，Family Setup 讓家人不需 iPhone 也能使用手錶。',
+   feats:['S5 SiP 晶片','Family Setup','跌倒偵測','心率通知','緊急求救'],
+   specs:{'晶片':'S5 SiP','機殼尺寸':'44mm / 40mm','防水':'50m','電池':'約 18 小時'}},
+
+  {id:'aws6',name:'Apple Watch Series 6',cat:'Apple Watch',emoji:'⌚',
+   tagline:'血氧偵測。登場。',price:'（已停售）',
+   desc:'2020 年首款搭載血氧感測器的 Apple Watch，S6 晶片，Always-On Retina 螢幕。',
+   feats:['S6 SiP 晶片','血氧偵測（首款）','Always-On 螢幕','快速充電','心電圖'],
+   specs:{'晶片':'S6 SiP','機殼尺寸':'44mm / 40mm','防水':'50m','電池':'約 18 小時'}},
+
+  /* ── AirPods ── */
+  {id:'ap4',name:'AirPods 4',cat:'AirPods',emoji:'🎧',
+   tagline:'全新開放式。全新音效。',price:'NT$4,490 起',
+   desc:'2024 年 AirPods 4 標準版，H2 晶片，全新開放式設計，個人化空間音訊，USB-C 充電。',
+   feats:['H2 晶片','個人化空間音訊','Siri 手勢控制','USB-C 充電'],
+   specs:{'晶片':'H2','降噪':'無','充電':'USB-C','電池':'耳機 5 小時 + 充電盒 30 小時'}},
+
+  {id:'ap4-anc',name:'AirPods 4（主動降噪）',cat:'AirPods',emoji:'🎧',
+   tagline:'全新音效。全新設計。',price:'NT$5,990 起',
+   desc:'AirPods 4 採用全新開放式設計，加入主動降噪與通透模式，H2 晶片提供更佳音質，搭載 Siri 語音控制。',
+   feats:['H2 晶片','主動降噪','通透模式','自適應音訊','個人化空間音訊','充電盒 USB-C'],
+   specs:{'晶片':'H2','降噪':'主動降噪 + 通透模式','充電':'USB-C / MagSafe','電池':'耳機 5 小時 + 充電盒 30 小時'}},
+
+  {id:'appro2',name:'AirPods Pro 2',cat:'AirPods',emoji:'🎧',
+   tagline:'聆聽。感受。超越。',price:'NT$8,490 起',
+   desc:'AirPods Pro 第 2 代配備 H2 晶片，主動降噪效果提升 2 倍，自適應通透模式可智慧過濾環境聲，還能偵測聽力健康。',
+   feats:['H2 晶片','主動降噪（提升 2×）','自適應通透模式','個人化空間音訊','聽力健康功能','USB-C / MagSafe 充電'],
+   specs:{'晶片':'H2','降噪':'主動降噪 + 自適應通透','充電':'USB-C / MagSafe / Apple Watch充電器','電池':'耳機 6 小時 + 充電盒 30 小時','防水':'IPX4'}},
+
+  {id:'apmax',name:'AirPods Max',cat:'AirPods',emoji:'🎧',
+   tagline:'音效設計。完美融合。',price:'NT$16,490 起',
+   desc:'AirPods Max 頭戴式耳機，H1 晶片，主動降噪，計算音訊，個人化空間音訊，採用 USB-C 充電。',
+   feats:['H1 晶片','主動降噪','計算音訊','個人化空間音訊','USB-C 充電','高保真音訊'],
+   specs:{'晶片':'H1','降噪':'主動降噪 + 通透模式','充電':'USB-C','電池':'最長 20 小時','重量':'386g'}},
+
+  {id:'ap3',name:'AirPods（第 3 代）',cat:'AirPods',emoji:'🎧',
+   tagline:'空間音訊。全新升級。',price:'（已停售）',
+   desc:'2021 年 AirPods 第 3 代，個人化空間音訊、Adaptive EQ、MagSafe 充電盒、IPX4 防水。',
+   feats:['H1 晶片','個人化空間音訊','Adaptive EQ','MagSafe 充電盒','IPX4 防水'],
+   specs:{'晶片':'H1','降噪':'無','充電':'Lightning / MagSafe','電池':'耳機 6 小時 + 充電盒 30 小時'}},
+
+  {id:'appro1',name:'AirPods Pro（第 1 代）',cat:'AirPods',emoji:'🎧',
+   tagline:'主動降噪。首次登場。',price:'（已停售）',
+   desc:'2019 年底首款 AirPods Pro，2022 年換用 USB-C 充電盒，H1 晶片，主動降噪與通透模式。',
+   feats:['H1 晶片','主動降噪','通透模式','個人化空間音訊','IPX4 防水'],
+   specs:{'晶片':'H1','降噪':'主動降噪 + 通透模式','充電':'USB-C / MagSafe','電池':'耳機 4.5 小時 + 充電盒 24 小時'}},
+
+  /* ── 其他 ── */
+  {id:'appletv4k',name:'Apple TV 4K (第 3 代)',cat:'其他',emoji:'📺',
+   tagline:'電視。進化。',price:'NT$5,690 起',
+   desc:'A15 Bionic 晶片，支援 4K HDR、Dolby Atmos、Wi-Fi 6E，全新 Siri Remote 帶來精準操控體驗。',
+   feats:['A15 Bionic','4K Dolby Vision / HDR10+','Dolby Atmos','Wi-Fi 6E','Thread','Siri Remote'],
+   specs:{'晶片':'A15 Bionic','解析度':'4K','音訊':'Dolby Atmos','Wi-Fi':'Wi-Fi 6E','儲存空間':'64GB / 128GB'}},
+
+  {id:'homepodmini',name:'HomePod mini',cat:'其他',emoji:'🔊',
+   tagline:'小身材。大音量。智慧家庭中樞。',price:'NT$3,290',
+   desc:'HomePod mini 小巧圓潤，提供 360° 空間音訊，是智慧家庭的理想控制中樞，支援 Matter 協定。',
+   feats:['S5 晶片','360° 空間音訊','智慧家庭中樞','Siri','Intercom 對講','Matter 支援'],
+   specs:{'晶片':'S5','Wi-Fi':'Wi-Fi 4 (802.11n)','藍牙':'Bluetooth 5.0','連接埠':'USB-C','高度':'84.3mm'}},
+
+  {id:'homepod2',name:'HomePod（第 2 代）',cat:'其他',emoji:'🔊',
+   tagline:'Siri。智慧音樂。家庭中樞。',price:'NT$10,490',
+   desc:'2023 年 HomePod 第 2 代，S7 晶片，支援空間音訊、溫濕度感測，是整個 Apple 智慧家庭的核心。',
+   feats:['S7 晶片','空間音訊','溫濕度感測','智慧家庭中樞','Matter 支援','Sound Recognition'],
+   specs:{'晶片':'S7','Wi-Fi':'Wi-Fi 4','藍牙':'Bluetooth 5.0','連接埠':'USB-C','聲道':'4 吋低音 + 5 組高音'}},
+
+  {id:'appletv4k-3',name:'Apple TV 4K（第 3 代）',cat:'其他',emoji:'📺',
+   tagline:'電視。進化。',price:'NT$5,690 起',
+   desc:'2022 年 Apple TV 4K，A15 Bionic 晶片，支援 HDR10+、Dolby Vision、Wi-Fi 6，全新 Siri Remote。',
+   feats:['A15 Bionic','4K Dolby Vision / HDR10+','Dolby Atmos','Wi-Fi 6','Thread','Siri Remote'],
+   specs:{'晶片':'A15 Bionic','解析度':'4K','音訊':'Dolby Atmos','Wi-Fi':'Wi-Fi 6','儲存空間':'64GB / 128GB'}},
+
+  {id:'appletv4k-2',name:'Apple TV 4K（第 2 代）',cat:'其他',emoji:'📺',
+   tagline:'畫面。更加鮮明。',price:'（已停售）',
+   desc:'2021 年 Apple TV 4K，A12 晶片，全新 Siri Remote 磁性設計，支援色彩校正。',
+   feats:['A12 Bionic','4K HDR','Dolby Atmos','全新 Siri Remote'],
+   specs:{'晶片':'A12 Bionic','解析度':'4K HDR','儲存空間':'32GB / 64GB'}}
+];
+
+const FEATURES = [
+  {id:'ai', title:'Apple Intelligence', icon:'🧠',
+   gradient:'linear-gradient(135deg,#5856d6,#2979ff)',
+   scene:'🤖',
+   sub:'AI 讓每個工作瞬間完成',
+   scenarios:[
+     {emoji:'✍️', label:'商務寫作', text:'撰寫客戶提案時，選取草稿點「重寫」— AI 自動轉為正式語氣，並精簡到三段重點。'},
+     {emoji:'🖼️', label:'即時插圖', text:'簡報前 5 分鐘需要配圖？輸入「城市夜景裡的咖啡師」，Image Playground 秒生成插圖風格圖片。'},
+     {emoji:'📬', label:'郵件整理', text:'早上收到 40 封信，重要信件已自動置頂，促銷信歸類，長信一鍵摘要為三行重點，省下 20 分鐘。'},
+     {emoji:'🎙️', label:'Siri 跨 App 指令', text:'說「把昨天拍的照片傳給媽媽的 Line」— Siri 找照片、開 Line、選聯絡人，一句話搞定。'},
+     {emoji:'🧹', label:'Photos 清理', text:'海邊合照背景有陌生人？Photos 清理工具一點選取，雜物消失，畫面清爽。'},
+     {emoji:'💬', label:'Smart Reply', text:'訊息問「明天幾點到？」時，智慧回覆建議「3 點」、「下午」，一秒傳出不打字。'},
+   ]},
+  {id:'camera', title:'相機與攝影', icon:'📷',
+   gradient:'linear-gradient(135deg,#ff6b6b,#ee5a24)',
+   scene:'🌃',
+   sub:'從日常到專業，一機全搞定',
+   scenarios:[
+     {emoji:'🌙', label:'夜間拍攝', text:'餐廳昏暗環境拍美食，Night Mode 自動偵測，多幀合成，食物色彩鮮豔細節清晰，不用閃光燈。'},
+     {emoji:'🎬', label:'電影感影片', text:'錄婚禮時 Cinematic Mode 自動追焦新人，背景虛化柔美，手機直出電影感成品。'},
+     {emoji:'🏃', label:'運動追蹤', text:'幫孩子拍足球賽或錄演唱會人群，Action Mode 讓高速移動場景穩定清晰如手持穩定器。'},
+     {emoji:'🔬', label:'微距世界', text:'靠近 2cm 自動切換微距，拍花瓣露水、電路板細節，捕捉肉眼難見的世界。'},
+     {emoji:'🎨', label:'相片風格', text:'設定「冷調電影」風格，每張照片拍攝時即時套用，整個 IG 主頁風格一致，無需後製。'},
+     {emoji:'🎥', label:'專業錄製', text:'iPhone Pro 錄製 ProRes Log，直接導入 DaVinci Resolve 調色，記者與短片創作者首選。'},
+   ]},
+  {id:'privacy', title:'隱私與安全', icon:'🔒',
+   gradient:'linear-gradient(135deg,#00b894,#00cec9)',
+   scene:'🛡️',
+   sub:'您的資料，只有您能看',
+   scenarios:[
+     {emoji:'👤', label:'生物辨識', text:'Face ID 臉部資料存於裝置安全晶片，Apple 與任何 App 都無法讀取，解鎖速度比打密碼快 5 倍。'},
+     {emoji:'🎯', label:'阻止追蹤', text:'裝 App 時彈出「允許追蹤？」拒絕後，廣告商無法跨 App 追蹤你的瀏覽行為或建立個人資料。'},
+     {emoji:'🔑', label:'通行密鑰', text:'登入銀行 App 只需 Face ID，沒有密碼就無法被釣魚網站騙走，安全性遠超傳統密碼加驗證碼。'},
+     {emoji:'🔍', label:'隱私報告', text:'懷疑某 App 偷用麥克風？設定 → 隱私報告，一目了然誰在什麼時間存取了哪個感測器。'},
+     {emoji:'🆘', label:'鎖定模式', text:'擔心國家級駭客攻擊的高風險用戶可開啟鎖定模式，限制連結預覽、FaceTime 等攻擊面。'},
+     {emoji:'📧', label:'郵件保護', text:'商家寄來的促銷信含追蹤像素，Apple Mail 自動隱藏真實 IP，對方無法知道你何時開信。'},
+   ]},
+  {id:'continuity', title:'跨裝置連續性', icon:'🔗',
+   gradient:'linear-gradient(135deg,#fdcb6e,#e17055)',
+   scene:'🌐',
+   sub:'iPhone、iPad、Mac 無縫協作',
+   scenarios:[
+     {emoji:'📂', label:'AirDrop 傳檔', text:'要傳 50 張 RAW 照片給攝影師朋友？AirDrop 無需網路，比 Line 快 10 倍，畫質完整不壓縮。'},
+     {emoji:'✋', label:'Handoff 接力', text:'iPhone 上回信到一半需要打長文，走到 Mac 前自動出現「接續此郵件」，一點繼續，零複製貼上。'},
+     {emoji:'📋', label:'通用剪貼簿', text:'在 iPhone 查 Google Maps 複製地址，直接到 Mac 的 Excel 貼上，不需重新打字。'},
+     {emoji:'📷', label:'連續相機', text:'遠距開會 MacBook 鏡頭畫質差？用支架將 iPhone 夾螢幕上方，自動成為 4K 網路攝影機。'},
+     {emoji:'🖥️', label:'Sidecar 延伸', text:'在 Mac 剪輯影片時，把 iPad 作為第二螢幕，同時用 Apple Pencil 逐幀在 iPad 上手繪字幕。'},
+     {emoji:'🪄', label:'iPhone 鏡像', text:'在辦公室 Mac 前工作時，iPhone 的 Line 通知直接出現在 Mac 螢幕，可直接回覆，不用拿手機。'},
+   ]},
+  {id:'health', title:'健康與健身', icon:'❤️',
+   gradient:'linear-gradient(135deg,#fd79a8,#e84393)',
+   scene:'💪',
+   sub:'Apple Watch 守護您的每一天',
+   scenarios:[
+     {emoji:'💓', label:'心電圖偵測', text:'某天手腕傳來通知「偵測到心律異常」，Apple Watch ECG 幫助用戶提早發現心房顫動，即時就醫。'},
+     {emoji:'😴', label:'睡眠品質', text:'早晨 Apple Watch 顯示「昨晚深眠 1.5 小時，低於建議值」，搭配 iPhone 提供改善睡眠的行為建議。'},
+     {emoji:'🚗', label:'碰撞偵測', text:'發生嚴重車禍且無回應時，Apple Watch 自動撥打 119 並通知緊急聯絡人，附上 GPS 位置。'},
+     {emoji:'🌡️', label:'體溫監測', text:'Apple Watch Series 8+ 偵測夜間腕部溫度變化，搭配 Cycle Tracking 協助預測排卵日。'},
+     {emoji:'🩸', label:'血氧偵測', text:'登山或高原旅行時，隨時量測血氧濃度，低於 90% 立即提醒，確保高海拔健康安全。'},
+     {emoji:'🫁', label:'呼吸中止偵測', text:'Series 10 偵測睡眠呼吸中止症跡象，連續一週異常後主動通知用戶，建議就醫進行正式診斷。'},
+   ]},
+  {id:'icloud', title:'iCloud 雲端服務', icon:'☁️',
+   gradient:'linear-gradient(135deg,#74b9ff,#0984e3)',
+   scene:'☁️',
+   sub:'所有裝置，同一份資料',
+   scenarios:[
+     {emoji:'📸', label:'照片同步', text:'用 iPhone 拍的旅遊照片，在家打開 Mac 直接編輯，旅行結束上傳，自動同步到所有裝置。'},
+     {emoji:'💾', label:'自動備份', text:'手機不小心摔壞？拿到新 iPhone 登入 Apple 帳號，所有 App、聯絡人、聊天記錄自動還原。'},
+     {emoji:'👨‍👩‍👧', label:'家人共享', text:'一個 iCloud+ 訂閱最多 5 位家人共享儲存空間，子女買 App 需先送請求才能付款，家長全程掌控。'},
+     {emoji:'🔒', label:'進階資料保護', text:'開啟進階保護後，iCloud 中幾乎所有資料使用端對端加密，連 Apple 也無法解密存取。'},
+     {emoji:'🌐', label:'Private Relay', text:'使用公共 Wi-Fi 時，Private Relay 自動隱藏 IP，防止咖啡廳或飯店網路記錄你的瀏覽行為。'},
+     {emoji:'🔎', label:'尋找裝置', text:'iPhone 遺失在計程車上，用 Find My 定位，鎖定顯示「撿到請聯絡此號碼」，失而復得機率大增。'},
+   ]},
+];
+
+const TROUBLES = [
+  /* ── iPhone ── */
+  {id:'ip1',prod:'iPhone',title:'iPhone 無法開機或黑屏',
+   tags:['開機','黑屏','當機','無反應','重開機','restart','power'],
+   steps:['按住側面按鈕（電源）+ 音量下按鈕 10 秒，直到看到 Apple Logo 出現（強制重啟）。','若仍無反應，將 iPhone 插入充電器充電至少 30 分鐘再試。','若充電也無反應，嘗試使用 Mac 或 PC 進入復原模式（DFU Mode），透過 Finder / iTunes 修復。','若以上方法均無效，攜帶至 Apple Store 或授權維修中心進行硬體檢測。']},
+
+  {id:'ip2',prod:'iPhone',title:'iPhone 電池耗電過快',
+   tags:['電池','耗電','省電','battery','充電','低電量','background'],
+   steps:['前往「設定 → 電池」查看各 App 的電池用量，找出耗電元凶。','關閉不必要的背景 App 更新：「設定 → 一般 → 背景 App 更新」。','開啟「低電量模式」延長電池續航：「設定 → 電池 → 低電量模式」。','降低螢幕亮度或開啟自動亮度調節。','停用定位服務（或改為使用時才允許）：「設定 → 隱私 → 定位服務」。','至「設定 → 電池 → 電池健康度」查看，若最大容量低於 80% 建議更換電池。']},
+
+  {id:'ip3',prod:'iPhone',title:'iPhone 無法接收訊號或通話失敗',
+   tags:['訊號','sim','無服務','通話','電話','network','carrier','門號','4g','5g'],
+   steps:['確認是否啟用「飛航模式」，若是請關閉。','重新開機後確認訊號是否恢復。','前往「設定 → 一般 → 傳輸或重置 iPhone → 重置 → 重置網路設定」。','確認 SIM 卡是否正常插入，取出後重新插入。','向電信業者確認帳號狀態是否正常。','若使用 eSIM，至「設定 → 行動服務」確認 eSIM 設定是否正確。']},
+
+  {id:'ip4',prod:'iPhone',title:'iPhone 螢幕觸控失靈',
+   tags:['觸控','螢幕','touch','顯示','無法點擊','感應'],
+   steps:['強制重啟 iPhone（側面 + 音量下按鈕 10 秒）。','確認螢幕保護貼是否過厚或品質不佳，嘗試移除後測試。','前往「設定 → 輔助使用 → 觸控 → 輔助觸控」開啟，確認是軟體問題還是硬體問題。','若特定區域失效，可能是螢幕硬體損壞，需送修更換螢幕。']},
+
+  {id:'ip5',prod:'iPhone',title:'iPhone Face ID 無法識別',
+   tags:['face id','臉部辨識','解鎖','掃描','face','辨識失敗'],
+   steps:['確保臉部沒有被遮蔽（口罩、帽子、強烈側光等）。','前往「設定 → Face ID 與密碼 → 重置 Face ID」，重新建立臉部資料。','清潔 Face ID 感測器區域（瀏海/動態島上方）。','若仍失敗，嘗試新增「替代外觀」讓系統學習更多臉部角度。','確認 iOS 為最新版本。若問題持續，聯絡 Apple 支援。']},
+
+  {id:'ip6',prod:'iPhone',title:'iPhone 相機拍照模糊或對焦失敗',
+   tags:['相機','模糊','對焦','camera','照片','拍照','ois','鏡頭'],
+   steps:['清潔鏡頭表面，移除指紋或保護貼的干擾。','輕拍螢幕選擇對焦點，或長按鎖定 AF/AE。','前往「設定 → 相機」確認光學影像穩定及場景偵測設定。','重新啟動相機 App 或重開機。','若特定鏡頭持續模糊（如超廣角），可能是硬體問題，建議至 Apple 檢測。']},
+
+  {id:'ip7',prod:'iPhone',title:'iPhone 無法傳送或接收簡訊 (iMessage/SMS)',
+   tags:['簡訊','iMessage','sms','訊息','傳送失敗','接收','message','藍色','綠色'],
+   steps:['確認「設定 → 訊息」中「iMessage」已開啟。','確認網路連線（iMessage 需 Wi-Fi 或行動數據）。','前往「設定 → 訊息 → 傳送與接收」確認 Apple ID 和電話號碼均已勾選。','嘗試關閉 iMessage 並等候 30 秒後重新開啟。','若無法傳送 SMS，確認行動數據與電信商帳號正常。']},
+
+  {id:'ip8',prod:'iPhone',title:'iPhone 儲存空間不足',
+   tags:['儲存空間','storage','空間','滿了','容量','刪除','app','照片'],
+   steps:['前往「設定 → 一般 → iPhone 儲存空間」查看詳細用量。','刪除不常用 App（長按 App 圖示 → 移除 App）。','清理 iCloud 照片（啟用「最佳化 iPhone 儲存空間」）。','清除 Safari 快取：「設定 → Safari → 清除歷史記錄與網站資料」。','刪除 Podcast、音樂或下載的 Netflix 離線影片。','使用「卸載 App」功能：「設定 → 一般 → iPhone 儲存空間 → 啟用自動卸載 App」。']},
+
+  {id:'ip9',prod:'iPhone',title:'iPhone 藍牙耳機連線後聲音從手機喇叭播出',
+   tags:['藍牙','音訊','耳機','喇叭','輸出','bluetooth','audio'],
+   steps:['前往控制中心，長按右上角音量區域查看音訊輸出選項。','點選您的藍牙耳機作為輸出裝置。','若耳機不顯示，重新連線藍牙裝置：設定 → 藍牙 → 點選裝置旁「i」→ 中斷連線後重新連線。','確認耳機電量充足（低電量可能造成連線不穩）。','重新啟動 iPhone 後再次連線。']},
+
+  {id:'ip10',prod:'iPhone',title:'iPhone 熱點分享無法使用',
+   tags:['熱點','hotspot','個人熱點','分享','tethering','wifi','4g','5g'],
+   steps:['前往「設定 → 個人熱點」確認已開啟「允許其他人加入」。','確認行動數據已開啟：「設定 → 行動服務 → 行動數據」。','確認電信方案是否支援熱點功能（部分方案需另外開通）。','若 Wi-Fi 熱點無法使用，嘗試改用 USB 或藍牙分享方式。','前往「設定 → 一般 → 傳輸或重置 iPhone → 重置 → 重置網路設定」。']},
+
+  /* ── Mac ── */
+  {id:'mac1',prod:'Mac',title:'Mac 運作緩慢或卡頓',
+   tags:['mac','緩慢','卡頓','slow','記憶體','spinning wheel','效能','cpu'],
+   steps:['開啟「活動監視器」（Spotlight 搜尋）查看 CPU 與記憶體使用率，找出佔用資源的 App。','重新啟動 Mac 釋放記憶體。','清除桌面上多餘檔案，確保系統磁碟有至少 10GB 以上空間。','前往「系統設定 → 一般 → 登入項目」移除不需要開機自動啟動的 App。','更新 macOS：「系統設定 → 一般 → 軟體更新」。','若使用 Intel Mac，可嘗試重置 SMC 以修復效能問題。']},
+
+  {id:'mac2',prod:'Mac',title:'Mac 無法連接 Wi-Fi',
+   tags:['mac','wifi','wi-fi','網路','連線','internet','無法連線'],
+   steps:['關閉 Wi-Fi 再重新開啟。','重新啟動路由器與 Mac。','前往「系統設定 → Wi-Fi」忘記目前網路，重新加入並輸入密碼。','開啟「終端機」輸入 sudo dscacheutil -flushcache 清除 DNS 快取。','前往「系統設定 → 一般 → 傳輸或重置 → 重置網路設定」（需重啟）。','若特定網路有問題，嘗試新增新的網路位置：「系統設定 → 網路 → 位置」。']},
+
+  {id:'mac3',prod:'Mac',title:'Mac App 閃退或無法開啟',
+   tags:['app','閃退','crash','無法開啟','停止運作','mac','程式'],
+   steps:['強制結束該 App（Option + Command + Esc），然後重新開啟。','更新 App（App Store → 更新頁面）。','刪除 App 的偏好設定檔：前往 ~/Library/Preferences/ 找到對應的 .plist 檔刪除。','若是 App Store 下載的 App，登出 App Store 再重新登入後重新下載。','重新安裝 App（先移除再重裝）。','聯絡 App 開發商或前往 Apple 討論區查詢解決方法。']},
+
+  {id:'mac4',prod:'Mac',title:'MacBook 無法充電',
+   tags:['mac','充電','電源','magsafe','usb-c','電池','充電器','不充電'],
+   steps:['確認充電線與充電器無損壞，嘗試更換充電配件。','清潔 MagSafe 或 USB-C 充電埠，移除灰塵。','重置 SMC：關機後按住 Shift + Control + Option + 電源鍵 10 秒後開機。','前往「系統設定 → 電池」確認「最佳化電池充電」是否導致延遲充電。','前往 Apple Support 頁面查詢是否有相關服務計劃。','若電池老化，前往 Apple Store 更換電池。']},
+
+  /* ── iPad ── */
+  {id:'ipad1',prod:'iPad',title:'iPad 觸控筆 / Apple Pencil 無法連線',
+   tags:['apple pencil','pencil','觸控筆','配對','連線','ipad','畫圖'],
+   steps:['確認 Apple Pencil 電量是否充足（Pencil 1 插入 Lightning，Pencil 2 吸附磁充）。','前往「設定 → 藍牙」確認 Apple Pencil 是否出現在已配對清單。','若未出現，移除配對後重新連線（Pencil 2：吸附後即自動配對；Pencil 1：插入 iPad 授權）。','確認 iPad 支援該 Apple Pencil 版本（Pencil Pro 僅支援特定機型）。','重新啟動 iPad。']},
+
+  {id:'ipad2',prod:'iPad',title:'iPad 無法更新 iPadOS',
+   tags:['ipad','更新','ipados','update','軟體','安裝','失敗'],
+   steps:['確認 iPad 儲存空間是否充足（至少需 2–3GB）。','使用 Wi-Fi 網路而非行動數據進行更新。','前往「設定 → 一般 → 儲存空間」清理不必要的 App 或媒體。','嘗試使用 Mac/PC 透過 Finder/iTunes 進行有線更新。','若仍失敗，重新啟動 iPad 後再次嘗試。']},
+
+  {id:'ipad3',prod:'iPad',title:'iPad 顯示器色彩偏黃或偏暖',
+   tags:['ipad','螢幕','顏色','色偏','顯示','yellow','暖色','true tone'],
+   steps:['前往「設定 → 顯示器與亮度」確認「原彩顯示」是否開啟，可嘗試關閉觀察是否改善。','確認「夜間模式」(Night Shift) 是否排程開啟。','前往「設定 → 顯示器與亮度 → 顏色濾鏡」確認未開啟色彩偏好設定。','若問題仍在，可聯絡 Apple 支援評估螢幕是否需更換。']},
+
+  {id:'ipad4',prod:'iPad',title:'iPad 無法連接 Magic Keyboard',
+   tags:['ipad','magic keyboard','鍵盤','smart folio','連接','keyboard','巧控鍵盤'],
+   steps:['確認 iPad 支援您的 Magic Keyboard 版本（不同代 iPad 使用不同規格）。','重新連接：將鍵盤從 iPad 拆下後重新吸附連接。','前往「設定 → 一般 → 鍵盤」確認設定正常。','重新啟動 iPad。','確認鍵盤及 iPad 均使用最新軟體版本。','若鍵盤完全無反應，嘗試以 USB-C 充電確認是否為電量問題。']},
+
+  {id:'ipad5',prod:'iPad',title:'iPad 分割視圖或多工失效',
+   tags:['ipad','split view','分割','多工','slide over','多視窗','stage manager'],
+   steps:['前往「設定 → 主畫面與多工作業」確認多工功能已開啟。','Stage Manager（M1 以上 iPad）：「設定 → 主畫面與多工作業 → Stage Manager」。','分割視圖使用方式：在已開啟的 App 中，點選頂部 … 按鈕選擇分割視圖。','部分 App 不支援分割視圖，請確認使用的 App 是否支援。','重新啟動 iPad 後再試。']},
+
+  {id:'ipad6',prod:'iPad',title:'iPad 充電緩慢或無法充電',
+   tags:['ipad','充電','慢充','usb-c','電源','電池','充電器'],
+   steps:['使用原廠或 Apple 認證的 USB-C 充電器（建議 20W 以上）。','確認充電線無破損，嘗試更換充電線。','清潔 USB-C 充電埠，移除灰塵或異物。','重新啟動 iPad 後再充電。','避免邊使用高耗電應用（遊戲、影片）邊充電，這會大幅降低充電速度。','若長期充電緩慢，前往「設定 → 電池 → 電池健康度」確認電池狀態。']},
+
+  {id:'ipad7',prod:'iPad',title:'iPad 無法辨識 Face ID（僅 iPad Pro）',
+   tags:['ipad','face id','辨識','解鎖','臉部','face','ipad pro','橫向'],
+   steps:['iPad Pro 的 Face ID 支援橫向及直向，確認持拿方向正確。','前往「設定 → Face ID 與密碼 → 重置 Face ID」重新建立臉部資料。','確認 Face ID 感測器（前鏡頭上方）未被保護殼遮擋。','新增「替代外觀」以增加識別率。','確認 iPadOS 為最新版本。']},
+
+  /* ── Apple Watch ── */
+  {id:'aw1',prod:'Apple Watch',title:'Apple Watch 無法與 iPhone 配對',
+   tags:['apple watch','配對','pair','連線','手錶','watch','斷線','重置'],
+   steps:['確認 iPhone 與 Apple Watch 的藍牙與 Wi-Fi 均已開啟。','確認兩部裝置靠近（1 公尺以內）。','重新啟動 Apple Watch（按住側面按鈕 → 滑動關機）與 iPhone。','在 Watch App 上點選「我的手錶 → 解除配對 Apple Watch」，然後重新配對。','若 Watch 已顯示有連線但功能異常，前往 Watch App 嘗試重置同步資料。']},
+
+  {id:'aw2',prod:'Apple Watch',title:'Apple Watch 電池續航力不佳',
+   tags:['apple watch','電池','電量','battery','續航','省電','watch'],
+   steps:['前往 Watch App → 我的手錶 → 電池確認電池健康狀況。','關閉 Always-On 顯示功能：Watch App → 顯示器與亮度 → 常亮顯示。','降低通知數量，避免過多 App 振動提醒。','關閉不必要的背景 App 重新整理。','啟用省電模式延長電量：Watch 上滑動 → 電量圖示。','若電池最大容量低於 80%，建議前往 Apple 更換電池。']},
+
+  {id:'aw3',prod:'Apple Watch',title:'Apple Watch 無法量測心率',
+   tags:['apple watch','心率','heart rate','感測器','量測','健康','心跳'],
+   steps:['確認 Apple Watch 緊貼手腕，錶帶不可過鬆。','清潔 Apple Watch 背面的感測器及皮膚上的汗水、乳液。','前往 Watch App → 隱私 → 健康 → 確認心率已開啟。','前往「設定 → 隱私 → 健康 → Apple Watch」確認授權正常。','移動時停止量測（劇烈運動時感測器需靜止才能準確讀值）。','重新啟動 Apple Watch。若仍失敗可能為硬體問題，聯絡 Apple 支援。']},
+
+  {id:'aw4',prod:'Apple Watch',title:'Apple Watch 通知無法顯示',
+   tags:['apple watch','通知','notification','震動','提醒','watch','alert'],
+   steps:['確認 Apple Watch 已解鎖且佩戴在手腕上（鎖定時通知傳送到 iPhone）。','確認 iPhone 螢幕朝下或鎖屏狀態（手機亮屏時通知由 iPhone 處理）。','開啟 Watch App → 通知，確認目標 App 的通知已啟用。','確認 iPhone 上該 App 的通知權限：設定 → 通知 → [App 名稱]。','勿擾模式：確認手錶上的勿擾模式或焦點模式已關閉。','重新啟動 Apple Watch 與 iPhone。']},
+
+  {id:'aw5',prod:'Apple Watch',title:'Apple Watch 無法使用 Apple Pay',
+   tags:['apple watch','apple pay','pay','感應','nfc','支付','手錶','付款'],
+   steps:['確認 Apple Watch 已鎖定碼並在配對後首次輸入密碼（需在解鎖狀態才能付款）。','前往 Watch App → 錢包與 Apple Pay 確認已新增卡片。','雙擊側面按鈕（非數位旋鈕）喚出 Wallet，靠近 NFC 終端機感應。','確認手錶已解鎖（若偵測到取下手腕會自動鎖定，需重新輸入密碼）。','確認行動付款已被電信帳號啟用（部分需另外申請）。']},
+
+  {id:'aw6',prod:'Apple Watch',title:'Apple Watch 跌倒偵測或緊急求救誤觸',
+   tags:['apple watch','跌倒','emergency sos','緊急','誤觸','跌倒偵測','fall detection'],
+   steps:['跌倒偵測：Watch App → 緊急求救 → 跌倒偵測，選擇「僅運動時」以減少誤觸。','緊急求救誤觸（長按側面按鈕）：可調整為需長按較長時間後才觸發。','若誤觸了緊急求救，立即在計時畫面滑動取消，或撥打當地緊急服務說明誤觸。','前往 Watch App → 緊急求救，根據需求調整「按住側面按鈕」的觸發設定。']},
+
+  /* ── AirPods ── */
+  {id:'ap1',prod:'AirPods',title:'AirPods 無法連線或配對',
+   tags:['airpods','連線','配對','bluetooth','藍牙','耳機','斷線','重置'],
+   steps:['確認 AirPods 已充電且充電盒有電量。','在 iPhone 上前往「設定 → 藍牙」找到 AirPods 點擊連線。','若顯示「未連線」，嘗試忘記裝置後重新配對。','重置 AirPods：將 AirPods 放入充電盒，按住充電盒背面按鈕 15 秒直到 LED 閃橘光再閃白光，然後靠近 iPhone 重新配對。','確認 iOS / iPadOS 為最新版本。']},
+
+  {id:'ap2',prod:'AirPods',title:'AirPods 單耳沒有聲音',
+   tags:['airpods','單耳','音量','沒聲音','耳機','左右','balance','平衡'],
+   steps:['確認 iPhone「設定 → 輔助使用 → 聽覺 → 左右平衡」滑桿是否置中。','清潔 AirPods 網孔，移除耳垢堆積。','將兩個 AirPods 放回充電盒 30 秒後取出再連線。','前往「設定 → 藍牙 → AirPods → 資訊 → 忘記此裝置」，然後重新配對。','若仍有一側沒聲音，該耳可能硬體損壞，可至 Apple 申請單耳更換。']},
+
+  {id:'ap3',prod:'AirPods',title:'AirPods 降噪效果不佳',
+   tags:['airpods','降噪','anc','noise cancelling','通透','主動降噪','效果差'],
+   steps:['確認正確佩戴 AirPods Pro，耳塞大小合適（設定 → Bluetooth → AirPods → 耳塞貼合測試）。','更換耳塞尺寸（S/M/L），確保良好密封。','前往「設定 → 藍牙 → AirPods → 資訊」開啟個人化空間音訊與降噪。','確認 AirPods 韌體為最新版（充電盒充電連接 iPhone 時自動更新）。','在嘈雜環境下，開啟「主動降噪」而非「通透模式」。']},
+
+  /* ── Apple 帳號 ── */
+  {id:'aid1',prod:'Apple 帳號',title:'忘記 Apple 帳號密碼',
+   tags:['apple id','密碼','password','忘記','重設','登入','account'],
+   steps:['前往 iforgot.apple.com 開始密碼重設流程。','選擇透過電子郵件或簡訊驗證身份。','若已設定受信任裝置，可在裝置上「允許密碼重設」。','完成身份驗證後設定新密碼（建議 12 位以上，混合大小寫與數字）。','重設後重新登入所有 Apple 裝置與服務。']},
+
+  {id:'aid2',prod:'Apple 帳號',title:'Apple 帳號被鎖定或停用',
+   tags:['apple id','鎖定','停用','locked','disabled','帳號','無法登入','security'],
+   steps:['前往 iforgot.apple.com 解鎖帳號。','選擇「解鎖帳號」並驗證身份（郵件、簡訊或受信任裝置）。','若使用雙重認證，在受信任裝置上輸入驗證碼。','解鎖後立即更改為強密碼。','若因可疑活動被鎖，聯絡 Apple 支援進行人工審核：getsupport.apple.com。']},
+
+  {id:'aid3',prod:'Apple 帳號',title:'無法開啟或設定 Apple 帳號雙重認證',
+   tags:['雙重認證','2fa','two factor','兩步驟','驗證','安全','apple id'],
+   steps:['前往「設定 → [您的名字] → 密碼與安全性 → 雙重認證」開啟。','新增至少一個受信任電話號碼（可接收簡訊或語音驗證碼）。','確認至少有一部受信任裝置（執行 iOS 9 / macOS El Capitan 以上）。','開啟後，登入 Apple 服務時需在受信任裝置上確認 6 位數驗證碼。','若無法關閉（帳號已超過 2 週），雙重認證是永久性的安全功能。']},
+
+  /* ── iCloud ── */
+  {id:'icl1',prod:'iCloud',title:'iCloud 儲存空間不足',
+   tags:['icloud','儲存空間','storage','空間','滿了','備份','照片','容量'],
+   steps:['前往「設定 → [您的名字] → iCloud → 管理帳號儲存空間」查看使用明細。','刪除舊裝置備份：管理儲存空間 → 備份 → 選擇不需要的裝置備份刪除。','關閉不必要 App 的 iCloud 備份選項。','升級 iCloud+ 方案（50GB/NT$30，200GB/NT$90，2TB/NT$270 每月）。','將照片下載至 Mac/PC 後從 iCloud 照片中刪除。','清理 iCloud 雲碟中不必要的舊檔案。']},
+
+  {id:'icl2',prod:'iCloud',title:'iCloud 照片無法同步',
+   tags:['icloud','照片','同步','photo','sync','上傳','下載','photos'],
+   steps:['確認「設定 → [您的名字] → iCloud → 照片」已開啟。','確認 Wi-Fi 連線正常，iCloud 照片同步優先使用 Wi-Fi。','確認 iCloud 儲存空間充足（空間不足時停止上傳）。','前往「設定 → 照片」確認「iCloud 照片」已開啟而非「我的照片串流」。','重新啟動裝置後等待同步完成（大量照片需數小時至數日）。','前往 icloud.com 確認照片是否已在網頁版出現。']},
+
+  {id:'icl3',prod:'iCloud',title:'iCloud 備份失敗',
+   tags:['icloud','備份','backup','失敗','無法備份','儲存','restore'],
+   steps:['確認 Wi-Fi 連線穩定且插上電源（備份需充電狀態）。','確認 iCloud 儲存空間充足：「設定 → iCloud → 管理帳號儲存空間」。','前往「設定 → [您的名字] → iCloud → iCloud 備份」手動立即備份。','若備份卡住，關閉 iCloud 備份再重新開啟，然後手動觸發備份。','嘗試透過 Mac/PC Finder 進行有線本機備份作為替代方案。']},
+
+  /* ── 全系列 ── */
+  {id:'gen1',prod:'全系列',title:'裝置過熱',
+   tags:['過熱','發燙','hot','temperature','熱','溫度','充電過熱'],
+   steps:['將裝置移至陰涼通風處，避免陽光直射。','移除保護殼（厚保護殼會阻礙散熱）。','關閉 GPS 導航、高強度遊戲、相機等高耗電 App。','充電時使用原廠或認證充電器，避免使用不明第三方配件。','若持續過熱超過 40°C 且出現警示訊息，靜置冷卻後聯絡 Apple 支援。']},
+
+  {id:'gen2',prod:'全系列',title:'裝置進水後的處理步驟',
+   tags:['進水','防水','water','ip68','液體','潮濕','泡水'],
+   steps:['立即從水中取出裝置，輕拍裝置移除多餘水分，開口朝下靜置。','不要使用吹風機、微波爐或壓縮空氣吹乾。','若 iPhone/Watch 顯示「偵測到液體」，等待通知消失後再充電。','靜置至少 5 小時（建議過夜）至充分乾燥。','即使標示 IP68 防水，也非100% 防水，海水、飲料、汗水的侵蝕性更強。','若裝置出現異常，盡快至 Apple Store 進行評估（進水損壞通常不在保固範圍內）。']},
+
+  {id:'gen3',prod:'全系列',title:'App Store 無法下載或更新 App',
+   tags:['app store','下載','更新','購買','install','app','無法下載','失敗'],
+   steps:['確認網路連線正常。','前往「設定 → [您的名字]」確認已登入 Apple 帳號。','檢查 Apple 系統狀態：apple.com/tw/support/systemstatus。','嘗試強制關閉 App Store 後重新開啟。','前往「設定 → [您的名字] → iTunes 與 App Store」關閉再開啟。','若出現「無法完成購買」，確認付款方式是否有效（帳務 → 管理付款方式）。']},
+
+  {id:'gen4',prod:'全系列',title:'藍牙裝置無法配對',
+   tags:['bluetooth','藍牙','配對','連線','耳機','keyboard','鍵盤','pair'],
+   steps:['確認兩部裝置的藍牙均已開啟。','將藍牙裝置設為配對模式（通常需長按電源鍵）。','在 iPhone/iPad/Mac 的藍牙設定中尋找並點選裝置。','若之前已配對但連線異常，先「忘記裝置」再重新配對。','避免在有大量藍牙干擾的環境中配對（如展場、辦公室）。','確認裝置已充電，電量不足可能影響藍牙搜尋能力。']},
+
+  {id:'gen5',prod:'全系列',title:'軟體更新失敗或卡住',
+   tags:['更新','update','ios','macos','安裝','失敗','卡住','軟體更新'],
+   steps:['確認裝置已充電（iPhone/iPad 需高於 50% 電量）並連接 Wi-Fi。','確認儲存空間是否充足（至少需要比更新包大小多 2GB 的空間）。','重新啟動裝置後再次嘗試更新。','若更新卡在特定進度，請耐心等候 15-30 分鐘勿強制重啟。','使用 Mac/PC 透過 Finder（Mac）或 iTunes（Windows）進行有線更新。','若更新徹底失敗，可嘗試還原至最新版本（注意：還原會清除資料，請先備份）。']},
+
+  /* ── 帳務 & 付款 ── */
+  {id:'pay1',prod:'帳務 & 付款',title:'如何查詢 App Store 購買記錄',
+   tags:['購買記錄','帳單','receipt','app store','purchase','交易','發票','消費'],
+   steps:['方法一：前往 reportaproblem.apple.com，登入 Apple 帳號即可查看最近 90 天的購買記錄。','方法二：開啟 App Store → 右上角頭像 → 已購項目。','方法三：前往 appleid.apple.com → 登入 → 付款與運送 → 查看付款歷史記錄。','若需要完整帳單（超過 90 天），請聯絡 Apple 支援索取。']},
+
+  {id:'pay2',prod:'帳務 & 付款',title:'申請 App Store 退款',
+   tags:['退款','refund','app store','purchase','申請','退費','in-app','訂閱'],
+   steps:['前往 reportaproblem.apple.com 並登入 Apple 帳號。','找到要申請退款的項目，點選「我想要 → 申請退款」。','選擇退款原因，送出申請。','Apple 通常在 48 小時內審核並以電子郵件通知結果。','退款核准後，款項退回原付款方式，通常需 5-7 個工作天。','注意：訂閱項目若已使用超過 2 天，Apple 可能拒絕退款申請。']},
+
+  {id:'pay3',prod:'帳務 & 付款',title:'更改付款方式或信用卡資訊',
+   tags:['付款方式','信用卡','payment','更改','更新','帳單','billing','卡片'],
+   steps:['iOS 裝置：設定 → [您的名字] → 付款與運送 → 編輯或新增付款方式。','Mac：App Store → 頭像 → 帳號資訊 → 付款資訊 → 編輯。','網頁：前往 appleid.apple.com → 付款與運送 → 管理付款方式。','若付款被拒，確認信用卡未過期且帳單地址正確。','台灣用戶可使用 Visa / Mastercard / JCB / 超商條碼繳費 / Apple Pay。']},
+
+  {id:'pay4',prod:'帳務 & 付款',title:'取消 App 訂閱',
+   tags:['取消','訂閱','subscription','cancel','自動更新','扣款','月費'],
+   steps:['iOS：設定 → [您的名字] → 訂閱 → 找到要取消的訂閱 → 取消訂閱。','Mac：App Store → 頭像 → 訂閱 → 選擇項目 → 取消。','網頁：appleid.apple.com → 訂閱 → 管理訂閱。','取消後，訂閱服務到期日前仍可繼續使用。','若看不到某個訂閱，可能該訂閱是透過第三方 App 或官網直接訂閱，需前往該服務網站取消。']},
+
+  {id:'pay5',prod:'帳務 & 付款',title:'Apple Pay 設定與問題排除',
+   tags:['apple pay','pay','nfc','支付','感應','contactless','付款','錢包'],
+   steps:['新增卡片：Wallet App → + 號 → 相機掃描卡號或手動輸入。','確認你的銀行支援 Apple Pay（台灣多數主流銀行均支援）。','若 NFC 感應失敗，確認雙面顯示器開啟（設定 → 錢包與 Apple Pay → 雙面顯示）。','若卡片被暫停，前往 Wallet App 選擇該卡片，並確認銀行帳號狀態。','iPhone 需靠近 NFC 終端機 1-2 公分以內並通過 Face ID / Touch ID 驗證。','出國使用：確認在「錢包」中已選擇正確預設卡片，部分國家終端機限制適用。']},
+
+  {id:'pay6',prod:'帳務 & 付款',title:'家人共享付款問題',
+   tags:['家人共享','family sharing','付款','共享','共用','訂閱','購買','家庭'],
+   steps:['組織者前往：設定 → [您的名字] → 家人共享 → 設定家人共享，並開啟「購買共享」。','家人共享最多 6 人（包含組織者），所有人共用同一付款方式。','若家庭成員看不到共享購買項目，確認 App Store → 頭像 → 已購項目 → 家人購買項目。','組織者可設定「要求購買」，子女購買需先獲得批准。','若付款遭拒，確認組織者的付款方式有效且帳單資訊正確。']},
+
+  {id:'pay7',prod:'帳務 & 付款',title:'Apple 禮品卡兌換與問題',
+   tags:['禮品卡','gift card','兌換','redeem','點數','credits','代碼','序號'],
+   steps:['開啟 App Store → 右上角頭像 → 兌換禮品卡或代碼 → 相機掃描或手動輸入。','兌換後點數會加入 Apple 帳戶，可用於購買 App、音樂、電影或訂閱。','若顯示「此代碼已使用」，確認是否已由其他人兌換；若確認未使用，請聯絡 Apple 支援。','禮品卡點數無使用期限，但不可轉讓至其他帳號或兌換現金。','購買禮品卡時請認明 Apple 官方通路，避免二手平台假冒。']},
+
+  {id:'pay8',prod:'帳務 & 付款',title:'查詢 Apple 發票或統一編號',
+   tags:['發票','invoice','統一編號','收據','tax','tax invoice','報帳','公司用'],
+   steps:['前往 reportaproblem.apple.com 登入，找到購買項目，點選取得發票/收據。','台灣 App Store 購買會自動開立電子發票（二聯式），需統編者可聯絡 Apple 支援。','若要輸入統一編號，可在購買時填寫（適用部分交易）。','月費訂閱發票每月自動開立，可在購買記錄頁面下載。','企業採購請使用 Apple Business Manager 或聯絡 Apple 企業銷售部門取得正式發票。']}
+];
+
+/* ============================================================ 以下為程式邏輯，請勿修改 ============================================================ */
+
+/* ── 銷售特色資料（可連結 Google Sheet 覆蓋） ── */
+const GOOGLE_SHEET_ID = ''; // 填入公開 Google Sheet ID 即可自動讀取
+const SALES_EXTRA = {
+  'ip17promax': {salesPoints:["A19 Pro 晶片帶來終極效能，視頻剪輯、3D 遊戲一氣呵成","8 倍潛望式長焦，輕鬆拍攝遠距離景物與演唱會現場","史上最長 iPhone 電池續航，一整天重度使用無須擔心","鈦金屬機身，比不鏽鋼輕 10%，更耐刮耐摔","USB 4 傳輸速度是前代 USB 3 的 2 倍"], appleUrl:'https://www.apple.com/tw/iphone-17-pro/'},
+  'ip17pro': {salesPoints:["A19 Pro 晶片，Pro 等級效能隨身帶走","完整三鏡頭 Pro 攝影系統，超廣角到 5× 長焦一機搞定","ProMotion 120Hz，捲動頁面、玩遊戲體驗如絲般順滑","比 Pro Max 輕巧，單手握持更舒適"], appleUrl:'https://www.apple.com/tw/iphone-17-pro/'},
+  'ipair': {salesPoints:["全球最薄 iPhone，僅 5.5mm，輕盈到幾乎感覺不到的重量（約 145g）","A18 晶片完整支援 Apple Intelligence 智慧功能","鈦金屬邊框，兼顧輕薄與耐用","MagSafe 生態系相容，充電、配件一應俱全"], appleUrl:'https://www.apple.com/tw/iphone/'},
+  'ip17': {salesPoints:["A19 晶片首次下放標準版，效能超越前代 Pro 系列","6.3 吋 ProMotion 120Hz 螢幕，是標準版 iPhone 首次搭載","雙 48MP 攝影系統，解析度大幅提升","性價比最高的 2025 iPhone，適合全面升級首選"], appleUrl:'https://www.apple.com/tw/iphone/'},
+  'ip17e': {salesPoints:["入門 iPhone 中最親民的選擇，支援完整 Apple Intelligence","A18 晶片帶來流暢的 AI 功能體驗","MagSafe 充電支援，享受無線充電便利","USB-C 接口，一線連接所有裝置"], appleUrl:'https://www.apple.com/tw/iphone/'},
+  'ip16promax': {salesPoints:["A18 Pro 晶片，是 iPhone 16 系列最強效能版本","4K 120fps 錄影，媲美電影院等級的影片質感","6.9 吋大螢幕，追劇、瀏覽社群媒體最舒適","最長 33 小時電池，出差旅遊免帶充電器"], appleUrl:'https://www.apple.com/tw/iphone-16-pro/'},
+  'ip16pro': {salesPoints:["A18 Pro 搭配 5× 長焦，讓攝影愛好者愛不釋手","4K 120fps 電影等級影片錄製","Camera Control 快捷鍵，精準操控相機設定","首款支援 Apple Intelligence 的 Pro iPhone"], appleUrl:'https://www.apple.com/tw/iphone-16-pro/'},
+  'ip16': {salesPoints:["首款為 Apple Intelligence 量身打造的標準 iPhone","Camera Control 快捷鍵操作更便捷","48MP 主鏡頭，社群媒體分享照片質感大躍升","MagSafe 生態相容，充電配件豐富"], appleUrl:'https://www.apple.com/tw/iphone-16/'},
+  'mba-m5-13': {salesPoints:["M5 晶片比 M3 Air 快達 1.5 倍，同等效能下耗電更少","Wi-Fi 7 速度比 Wi-Fi 6E 快 2 倍，大型檔案傳輸飛速","16GB 統一記憶體標配，多工切換毫無延遲","無風扇靜音設計，圖書館、咖啡廳辦公零噪音"], appleUrl:'https://www.apple.com/tw/macbook-air/'},
+  'mba-m5-15': {salesPoints:["15 吋大螢幕兼顧攜帶性，外出開會看簡報清晰又舒適","M5 晶片讓同時開 30 個分頁、多個 App 流暢無礙","最長 18 小時電池，整天不用找插座","公司會議室提案、客戶拜訪最佳利器"], appleUrl:'https://www.apple.com/tw/macbook-air/'},
+  'mbp-m5pro-14': {salesPoints:["M5 Pro 18 核心 CPU，4K/8K 影片後製輕鬆應對","Liquid Retina XDR 螢幕色彩精準，設計師、攝影師首選","Thunderbolt 5 傳輸速度高達 120Gbps","最長 17 小時電池，外出拍攝後製不間斷"], appleUrl:'https://www.apple.com/tw/macbook-pro/'},
+  'imac-m4': {salesPoints:["4.5K 視網膜螢幕讓長時間辦公眼睛不疲勞","7 種時尚配色，是辦公桌上最美的裝置","M4 晶片處理 Excel 大型試算表、多視窗編輯毫無壓力","超薄一體機設計，節省桌面空間"], appleUrl:'https://www.apple.com/tw/imac/'},
+  'macmini-m4': {salesPoints:["史上最小 Mac mini，放在電視旁毫不突兀","NT$19,900 起，CP 值最高的 Mac 入門選擇","最多支援 3 台顯示器，一機三螢的工作站配置","前方 USB-C 方便連接隨身碟、行動硬碟"], appleUrl:'https://www.apple.com/tw/mac-mini/'},
+  'ipadpro13-m4': {salesPoints:["史上最薄 Apple 產品，僅 5.1mm，比 iPad 7 代還薄","Tandem OLED 螢幕亮度高達 1600 尼特，戶外也清晰","M4 晶片配合 Apple Pencil Pro，速記、繪圖零延遲","Thunderbolt 連接，傳輸外接 SSD 速度媲美 Mac"], appleUrl:'https://www.apple.com/tw/ipad-pro/'},
+  'aws10-46': {salesPoints:["史上最薄 Apple Watch，手腕更舒適輕盈","睡眠呼吸中止症偵測，守護全家健康","Fast Charge 45 分鐘充至 80%，睡前充電無壓力","100m 防水，游泳、衝浪都能安心佩戴"], appleUrl:'https://www.apple.com/tw/apple-watch-series-10/'},
+  'awultra2': {salesPoints:["登山、馬拉松、鐵人三項最強伴侶，雙頻 GPS 精準定位","最長 60 小時超長電池，多日戶外挑戰無後顧之憂","Siren 86 分貝警報聲，緊急時呼救不怕被淹沒","100m 防水，深潛水下導航全程記錄"], appleUrl:'https://www.apple.com/tw/apple-watch-ultra-2/'},
+  'appro2': {salesPoints:["主動降噪提升 2 倍，通勤、搭機噪音消失無蹤","自適應通透模式智慧辨識環境聲，避免危險交通事故","個人化空間音訊，追劇如置身電影院","聽力健康功能，預防長期使用造成聽力損傷"], appleUrl:'https://www.apple.com/tw/airpods-pro/'},
+  'ap4-anc': {salesPoints:["全新開放式設計，配戴舒適不壓耳，長時間佩戴無負擔","主動降噪讓通話清晰，遠距會議無底噪困擾","USB-C / MagSafe 充電，一線兩用超方便","比 AirPods Pro 價格更親民，日常使用的最佳選擇"], appleUrl:'https://www.apple.com/tw/airpods/'}
+};
+
+/* ── Apple 官網圖片對照表 ── */
+const APPLE_IMAGES = {
+  'ip17promax': 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-17-pro-max-blacktitanium-select?wid=400&hei=400&fmt=png-alpha',
+  'ip17pro': 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-17-pro-blacktitanium-select?wid=400&hei=400&fmt=png-alpha',
+  'ip16promax': 'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-16-pro-max-black-titanium-select?wid=400&hei=400&fmt=png-alpha',
+  'ip16pro': 'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-16-pro-black-titanium-select?wid=400&hei=400&fmt=png-alpha',
+  'ip16': 'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-16-black-select-202409?wid=400&hei=400&fmt=png-alpha',
+  'mba-m5-13': 'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/mba13-m4-midnight-select-202503?wid=400&hei=400&fmt=png-alpha',
+  'mba-m4-13': 'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/mba13-m4-midnight-select-202503?wid=400&hei=400&fmt=png-alpha',
+  'imac-m4': 'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/imac-24-blue-selection-hero-202404?wid=400&hei=400&fmt=png-alpha',
+  'macmini-m4': 'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/mac-mini-hero-202411?wid=400&hei=400&fmt=png-alpha',
+  'ipadpro13-m4': 'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/ipad-pro-13-select-202405?wid=400&hei=400&fmt=png-alpha',
+  'appro2': 'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/MQTP3?wid=400&hei=400&fmt=png-alpha'
+};
+
+function getSalesPoints(p) {
+  const extra = SALES_EXTRA[p.id];
+  if (extra && extra.salesPoints) return extra.salesPoints;
+  // fallback: generate from feats
+  return (p.feats || []).slice(0, 4).map(f => f);
+}
+
+function getAppleUrl(p) {
+  const extra = SALES_EXTRA[p.id];
+  if (extra && extra.appleUrl) return extra.appleUrl;
+  if (p.cat === 'iPhone') return 'https://www.apple.com/tw/iphone/';
+  if (p.cat === 'Mac') return 'https://www.apple.com/tw/mac/';
+  if (p.cat === 'iPad') return 'https://www.apple.com/tw/ipad/';
+  if (p.cat === 'Apple Watch') return 'https://www.apple.com/tw/apple-watch/';
+  if (p.cat === 'AirPods') return 'https://www.apple.com/tw/airpods/';
+  return 'https://www.apple.com/tw/';
+}
+
+/* ── 讀取 Google Sheet 銷售資料（選用） ── */
+async function fetchGoogleSheetSales() {
+  if (!GOOGLE_SHEET_ID) return;
+  try {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEET_ID}/values/Sheet1?key=YOUR_API_KEY`;
+    const res = await fetch(url);
+    if (!res.ok) return;
+    const data = await res.json();
+    // Expected format: col A = product ID, col B+ = sales points
+    if (data.values) {
+      data.values.forEach(row => {
+        const id = row[0];
+        if (id && !SALES_EXTRA[id]) SALES_EXTRA[id] = { salesPoints: [] };
+        if (id && SALES_EXTRA[id]) {
+          SALES_EXTRA[id].salesPoints = row.slice(1).filter(Boolean);
+        }
+      });
+    }
+  } catch(e) { console.warn('Google Sheet fetch skipped:', e.message); }
+}
+
+/* ── 重新整理 ── */
+async function refreshData() {
+  const btn = document.getElementById('refresh-btn');
+  const icon = document.getElementById('refresh-icon');
+  btn.classList.add('spinning');
+  icon.style.display = 'inline-block';
+  icon.style.animation = 'spin .7s linear infinite';
+  await fetchGoogleSheetSales();
+  renderProds();
+  renderFeats();
+  renderTrouble();
+  renderCmpPicker();
+  setTimeout(() => {
+    btn.classList.remove('spinning');
+    icon.style.animation = '';
+  }, 600);
+}
+
+
+
+let isDark = true;
+document.documentElement.setAttribute('data-theme','dark');
+document.addEventListener('DOMContentLoaded', function(){
+  var ti=document.getElementById('ticon'); if(ti) ti.textContent='☀️';
+  var tt=document.getElementById('ttxt'); if(tt) tt.textContent='淺色';
+  var tc=document.getElementById('tcmeta'); if(tc) tc.setAttribute('content','#000000');
+});
+let selProds = [];
+let activeProdCat = '全部';
+let activeTroubleCat = '全部';
+
+function toggleTheme() {
+  isDark = !isDark;
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : '');
+  document.getElementById('ticon').textContent = isDark ? '☀️' : '🌙';
+  document.getElementById('ttxt').textContent  = isDark ? '淺色' : '深色';
+  document.getElementById('tcmeta').setAttribute('content', isDark ? '#000000' : '#ffffff');
+}
+
+function goPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('pg-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+/* ─── PRODUCTS ─── */
+function renderProds() { /* grid removed — no-op */ }
+
+function showProdDetail(id) {
+  var detail = document.getElementById('prod-detail');
+  if (!detail) return;
+  if (!id) { detail.innerHTML = ''; return; }
+  var p = PRODUCTS.find(function(x){ return x.id===id; });
+  if (!p) return;
+
+  var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  var cardBg   = dark ? '#1c1c1e' : '#ffffff';
+  var bodyBg   = dark ? '#2c2c2e' : '#f5f5f7';
+  var borderC  = dark ? '#3a3a3c' : '#d1d1d6';
+  var textC    = dark ? '#f5f5f7' : '#1d1d1f';
+  var subC     = dark ? '#98989d' : '#6e6e73';
+  var accentC  = dark ? '#2997ff' : '#0071e3';
+
+  var appleUrl = getAppleUrl(p);
+  var salesPts = getSalesPoints(p);
+
+  // ── Header (gradient always shown regardless of theme) ──
+  var hd = '<div style="background:linear-gradient(135deg,#0071e3 0%,#34aadc 55%,#5e5ce6 100%);padding:22px 18px 18px;color:#fff;">' +
+    '<div style="font-size:21px;font-weight:700;letter-spacing:-.4px;margin-bottom:4px;">'+p.name+'</div>' +
+    '<div style="font-size:13px;opacity:.82;margin-bottom:14px;line-height:1.4;">'+(p.tagline||'')+'</div>' +
+    '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">' +
+      '<span style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);color:#fff;font-size:13px;font-weight:700;padding:5px 14px;border-radius:20px;">'+(p.price||'')+'</span>' +
+      '<a href="'+appleUrl+'" target="_blank" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;text-decoration:none;">🌐 Apple 官網 ↗</a>' +
+    '</div>' +
+  '</div>';
+
+  // ── Section helper ──
+  function sec(title, content) {
+    return '<div style="padding:14px 18px;border-bottom:1px solid '+borderC+';">' +
+      '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:'+subC+';margin-bottom:10px;">'+title+'</div>' +
+      content +
+      '</div>';
+  }
+
+  // ── Description ──
+  var descHtml = p.desc ? sec('產品介紹',
+    '<div style="font-size:14px;line-height:1.68;color:'+textC+';">'+p.desc+'</div>'
+  ) : '';
+
+  // ── Feature chips ──
+  var featHtml = '';
+  if (p.feats && p.feats.length) {
+    var chips = p.feats.map(function(f){
+      return '<div style="background:'+bodyBg+';border:1px solid '+borderC+';border-radius:11px;padding:8px 10px 8px 26px;font-size:12.5px;line-height:1.4;color:'+textC+';position:relative;">' +
+        '<span style="position:absolute;left:9px;top:9px;color:'+accentC+';font-size:10px;">✦</span>'+f+'</div>';
+    }).join('');
+    featHtml = sec('主要功能',
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;">'+chips+'</div>'
+    );
+  }
+
+  // ── Specs ──
+  var specHtml = '';
+  if (p.specs) {
+    var rows = Object.entries(p.specs).map(function(e){
+      return '<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid '+borderC+';">' +
+        '<div style="flex:0 0 38%;font-size:12px;color:'+subC+';font-weight:500;">'+e[0]+'</div>' +
+        '<div style="flex:1;font-size:13px;font-weight:600;color:'+textC+';line-height:1.4;">'+e[1]+'</div></div>';
+    });
+    // Remove last row border
+    if (rows.length) rows[rows.length-1] = rows[rows.length-1].replace('border-bottom:1px solid '+borderC+';','border-bottom:none;');
+    specHtml = sec('詳細規格', '<div>'+rows.join('')+'</div>');
+  }
+
+  // ── Sales ──
+  var salesHtml = '';
+  if (salesPts.length) {
+    var items = salesPts.map(function(sp){
+      return '<div style="display:flex;gap:8px;background:'+bodyBg+';border:1px solid '+borderC+';border-radius:10px;padding:9px 12px;font-size:13px;line-height:1.45;color:'+textC+';margin-bottom:6px;">' +
+        '<span style="flex-shrink:0;">🏷</span>'+sp+'</div>';
+    }).join('');
+    salesHtml = sec('銷售特色', '<div style="padding-bottom:2px;">'+items+'</div>');
+  }
+
+  // ── Assemble ──
+  detail.innerHTML =
+    '<div style="margin:14px 16px 0;border-radius:20px;overflow:hidden;border:1.5px solid '+borderC+';box-shadow:0 6px 28px rgba(0,0,0,.28);">' +
+      hd +
+      '<div style="background:'+cardBg+';">' +
+        descHtml + featHtml + specHtml + salesHtml +
+        '<div style="padding:14px 18px;">' +
+          '<a href="'+appleUrl+'" target="_blank" style="color:'+accentC+';font-size:14px;font-weight:600;text-decoration:none;">🌐 在 Apple 官網查看 ↗</a>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  setTimeout(function(){ detail.scrollIntoView({behavior:'smooth',block:'nearest'}); }, 60);
+}
+
+function buildProdSelector() {
+  var sel = document.getElementById('prod-select');
+  if (!sel) return;
+  var placeholder = sel.options[0];
+  sel.innerHTML = '';
+  sel.appendChild(placeholder);
+  var cats = [];
+  PRODUCTS.forEach(function(p) {
+    if (p.status !== 'coming-soon' && cats.indexOf(p.cat) === -1) cats.push(p.cat);
+  });
+  cats.forEach(function(cat) {
+    var grp = document.createElement('optgroup');
+    grp.label = cat;
+    PRODUCTS.filter(function(p) { return p.cat === cat && p.status !== 'coming-soon'; }).forEach(function(p) {
+      var opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.name;
+      grp.appendChild(opt);
+    });
+    sel.appendChild(grp);
+  });
+}
+
+function toggleCmp(e, id) {
+  e.stopPropagation();
+  if (selProds.includes(id)) {
+    selProds = selProds.filter(x => x !== id);
+  } else if (selProds.length < 3) {
+    selProds.push(id);
+  }
+  document.getElementById('cmp-sel-count').textContent = selProds.length;
+  document.getElementById('cmp-btn').disabled = selProds.length < 2;
+  renderProds();
+}
+
+function openModal(id) {
+  const p = PRODUCTS.find(x => x.id === id);
+  if (!p) return;
+  const specRows = p.specs ? Object.entries(p.specs).map(([k,v]) =>
+    `<tr><td>${k}</td><td>${v}</td></tr>`).join('') : '';
+  const featItems = p.feats ? p.feats.map(f => `<li>${f}</li>`).join('') : '';
+  const appleUrl = getAppleUrl(p);
+  const salesPts = getSalesPoints(p);
+  const soon = p.status === 'coming-soon';
+  const salesHtml = salesPts.length ? `
+    <div class="sales-section">
+      <div class="sales-title">&#127991; 銷售特色</div>
+      ${salesPts.map(sp=>`<div class="sales-item">${sp}</div>`).join('')}
+    </div>` : '';
+  const soonBanner = soon ? `<div class="soon-banner">&#x1F6EB; 即將發售 — 規格資訊來自傳聞，以官方公告為準</div>` : '';
+  document.getElementById('modal-body').innerHTML =
+    `<div class="modal-name">${p.name}</div>
+     <div class="modal-tagline">${p.tagline||''}</div>
+     <div class="modal-price">${p.price||''}</div>` +
+    soonBanner +
+    `<div class="modal-desc">${p.desc||''}</div>` +
+    `<a class="modal-apple-link" href="${appleUrl}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;margin-bottom:14px;font-size:13px;color:var(--accent);text-decoration:none;font-weight:500;">&#127758; 在 Apple 官網查看 ↗</a>` +
+    salesHtml +
+    (featItems ? `<ul class="modal-feats">${featItems}</ul>` : '') +
+    (specRows ? `<h4 style="font-size:13px;color:var(--sub);margin:12px 0 8px;text-transform:uppercase;letter-spacing:.5px;">詳細規格</h4><table class="spec-table"><tbody>${specRows}</tbody></table>` : '');
+  document.getElementById('overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(e) { if (e.target === document.getElementById('overlay')) closeOverlay(); }
+function closeOverlay() {
+  document.getElementById('overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+/* ─── FEATURES ─── */
+let openFeat = null;
+function renderFeats() {
+  const grid = document.getElementById('feat-grid');
+  const detail = document.getElementById('feat-detail-area');
+  if (!grid) return;
+  grid.innerHTML = FEATURES.map((f,i) => `
+    <div class="feat-card" onclick="toggleFeat(${i})" id="fc-${i}"
+         style="background:${f.gradient}">
+      <div class="feat-card-scene">${f.scene}</div>
+      <div class="feat-card-inner">
+        <div class="feat-card-icon">${f.icon}</div>
+        <div class="feat-card-title">${f.title}</div>
+        <div class="feat-card-sub">${f.sub}</div>
+      </div>
+    </div>`).join('');
+  detail.innerHTML = '';
+}
+
+function toggleFeat(i) {
+  const detail = document.getElementById('feat-detail-area');
+  const f = FEATURES[i];
+  // If same card clicked again, toggle off
+  if (openFeat === i) {
+    openFeat = null;
+    detail.innerHTML = '';
+    document.querySelectorAll('.feat-card').forEach(c => c.style.opacity='1');
+    return;
+  }
+  openFeat = i;
+  // Dim other cards slightly
+  document.querySelectorAll('.feat-card').forEach((c,j) => c.style.opacity = j===i?'1':'0.55');
+  // Show detail panel
+  detail.innerHTML = `
+    <div class="feat-detail open" style="border-top:3px solid transparent;border-image:${f.gradient};border-image-slice:1;">
+      <div style="font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+        <span>${f.icon}</span><span>${f.title}</span>
+      </div>
+      ${f.scenarios.map(s => `
+        <div class="feat-scenario">
+          <div class="feat-scenario-emoji">${s.emoji}</div>
+          <div>
+            <div class="feat-scenario-label">${s.label}</div>
+            <div class="feat-scenario-text">${s.text}</div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+  // Scroll into view
+  setTimeout(() => detail.scrollIntoView({behavior:'smooth',block:'nearest'}), 50);
+}
+
+/* ─── TROUBLE ─── */
+function renderTrouble() {
+  var q = (document.getElementById('trouble-search') ? document.getElementById('trouble-search').value : '').toLowerCase();
+  var list = document.getElementById('trouble-list');
+  if (!list) return;
+
+  var CAT_ICONS = {
+    'iPhone':'📱','Mac':'💻','iPad':'🖥️','Apple Watch':'⌚',
+    'AirPods':'🎧','Apple TV':'📺','HomePod':'🔊'
+  };
+
+  var filtered = TROUBLES.filter(function(t) {
+    var matchCat = activeTroubleCat === '全部' || t.prod === activeTroubleCat;
+    var matchQ = !q || t.title.toLowerCase().includes(q) ||
+      (t.tags||[]).some(function(tag){ return tag.toLowerCase().includes(q); }) ||
+      t.prod.toLowerCase().includes(q);
+    return matchCat && matchQ;
+  });
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">🔍</div><p>找不到相關問題</p></div>';
+    return;
+  }
+
+  var groups = {}, groupOrder = [];
+  filtered.forEach(function(t) {
+    if (!groups[t.prod]) { groups[t.prod]=[]; groupOrder.push(t.prod); }
+    groups[t.prod].push(t);
+  });
+
+  var out = '';
+  groupOrder.forEach(function(cat) {
+    var icon = CAT_ICONS[cat] || '🔧';
+    if (activeTroubleCat === '全部') {
+      out += '<div class="trouble-section-header">' +
+        '<div class="trouble-section-badge">'+icon+' '+cat+'</div>' +
+        '<div class="trouble-section-line"></div></div>';
+    }
+    groups[cat].forEach(function(t) {
+      // Strip leading product name prefix from title
+      var title = t.title;
+      var prefixes = [t.prod+' ', t.prod+'　'];
+      prefixes.forEach(function(pre) {
+        if (title.indexOf(pre) === 0) title = title.slice(pre.length);
+      });
+
+      var stepsHtml = t.steps.map(function(s,i){
+        return '<div class="trouble-step">' +
+          '<div class="trouble-step-num">'+(i+1)+'</div>' +
+          '<div>'+s+'</div></div>';
+      }).join('');
+
+      out += '<div class="trouble-card" id="tc-'+t.id+'">' +
+        '<div class="trouble-card-header" onclick="toggleTrouble(\''+t.id+'\')">' +
+        '<div class="trouble-card-title">'+title+'</div>' +
+        '<div class="trouble-card-chevron">▼</div>' +
+        '</div>' +
+        '<div class="trouble-card-body">'+stepsHtml+'</div>' +
+        '</div>';
+    });
+  });
+
+  list.innerHTML = out;
+}
+
+function toggleTrouble(id) {
+  var card = document.getElementById('tc-' + id);
+  if (!card) return;
+  var isOpen = card.classList.contains('open');
+  document.querySelectorAll('.trouble-card.open').forEach(function(c) { c.classList.remove('open'); });
+  if (!isOpen) card.classList.add('open');
+}
+
+function buildTroubleCats() {
+  var wrap = document.getElementById('trouble-cats');
+  if (!wrap) return;
+  var cats = ['全部'];
+  TROUBLES.forEach(function(t) {
+    if (cats.indexOf(t.prod) === -1) cats.push(t.prod);
+  });
+  wrap.innerHTML = cats.map(function(c) {
+    return '<button class="trouble-filter-pill' + (c === activeTroubleCat ? ' active' : '') +
+      '" onclick="setTroubleCat(\'' + c + '\')">' + c + '</button>';
+  }).join('');
+}
+
+function setTroubleCat(cat) {
+  activeTroubleCat = cat;
+  buildTroubleCats();
+  renderTrouble();
+}
+
+function buildCmpCats() {
+  // No-op: category filter removed, using grouped selects instead
+}
+function setCmpCat(cat) { activeCmpCat = cat; }
+function renderCmpPicker() {
+  // No-op: old chip/grid logic removed
+}
+
+function populateCmpSelects() {
+  const ids = ['cmp-sel-a','cmp-sel-b','cmp-sel-c'];
+  ids.forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const currentVal = sel.value;
+    // keep first placeholder option
+    sel.innerHTML = `<option value="">${id === 'cmp-sel-c' ? '選擇第三款產品（選填）…' : '選擇產品…'}</option>`;
+    const cats = [...new Set(PRODUCTS.map(p => p.cat))];
+    cats.forEach(cat => {
+      const grp = document.createElement('optgroup');
+      grp.label = cat;
+      PRODUCTS.filter(p => p.cat === cat).forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = p.name + (p.status === 'coming-soon' ? ' 🔜' : '');
+        grp.appendChild(opt);
+      });
+      sel.appendChild(grp);
+    });
+    sel.value = currentVal;
+  });
+}
+
+function toggleThirdCmp() {
+  showThirdCmp = !showThirdCmp;
+  document.getElementById('cmp-third-wrap').style.display = showThirdCmp ? 'block' : 'none';
+  document.getElementById('cmp-add-third-btn').textContent = showThirdCmp ? '✕ 移除第三款' : '＋ 加入第三款產品比較';
+  if (!showThirdCmp) {
+    document.getElementById('cmp-sel-c').value = '';
+    onCmpSelChange();
+  }
+}
+
+function onCmpSelChange() {
+  const a = document.getElementById('cmp-sel-a').value;
+  const b = document.getElementById('cmp-sel-b').value;
+  const c = document.getElementById('cmp-sel-c') ? document.getElementById('cmp-sel-c').value : '';
+  if (a && b) buildCmpTable2([a, b, c].filter(Boolean));
+  else document.getElementById('cmp-result').innerHTML = '';
+}
+
+function buildCmpTable2(ids) {
+  const prods = ids.map(id => PRODUCTS.find(p => p.id === id)).filter(Boolean);
+  if (prods.length < 2) return;
+  const allKeys = [...new Set(prods.flatMap(p => Object.keys(p.specs||{})))];
+  const thead = `<tr><th>規格</th>${prods.map(p=>`<th>${p.emoji||''} ${p.name}${p.status==='coming-soon'?' 🔜':''}</th>`).join('')}</tr>`;
+  const rows = allKeys.map(k => {
+    const vals = prods.map(p => (p.specs||{})[k]||'—');
+    // highlight differences
+    const allSame = vals.every(v => v === vals[0]);
+    return `<tr><td class="row-label">${k}</td>${vals.map(v=>`<td style="${!allSame?'font-weight:600':''}">${v}</td>`).join('')}</tr>`;
+  }).join('');
+  // Also show price + tagline rows at top
+  const priceRow = `<tr><td class="row-label">售價</td>${prods.map(p=>`<td style="color:var(--accent);font-weight:600">${p.price||'—'}</td>`).join('')}</tr>`;
+  const tagRow = `<tr><td class="row-label">標語</td>${prods.map(p=>`<td style="font-style:italic;color:var(--sub)">${p.tagline||'—'}</td>`).join('')}</tr>`;
+  document.getElementById('cmp-result').innerHTML = `
+    <div class="cmp-table-wrap">
+      <table class="cmp-table">
+        <thead>${thead}</thead>
+        <tbody>${priceRow}${tagRow}${rows}</tbody>
+      </table>
+    </div>`;
+  setTimeout(() => document.getElementById('cmp-result').scrollIntoView({behavior:'smooth',block:'start'}), 100);
+}
+
+// Legacy: keep buildCmpTable for any old references
+function buildCmpTable() { onCmpSelChange(); }
+
+/* ─── QUIZ ─── */
+function initQuizSelect() {
+  const sel = document.getElementById('quiz-prod-select');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">請選擇產品…</option>';
+  const cats = [...new Set(PRODUCTS.map(p => p.cat))];
+  cats.forEach(cat => {
+    const grp = document.createElement('optgroup');
+    grp.label = cat;
+    PRODUCTS.filter(p => p.cat === cat).forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.name;
+      grp.appendChild(opt);
+    });
+    sel.appendChild(grp);
+  });
+}
+
+let quizState = {questions:[], current:0, score:0, answered:[]};
+
+function startQuiz() {
+  const id = document.getElementById('quiz-prod-select').value;
+  if (!id) { document.getElementById('quiz-area').innerHTML = '<div class="empty"><div class="empty-icon">🎮</div><p>選擇產品後自動生成 5 道測驗題</p></div>'; return; }
+  const product = PRODUCTS.find(p => p.id === id);
+  if (!product) return;
+  const questions = generateQuizQuestions(product);
+  quizState = {questions, current:0, score:0, answered:[]};
+  renderQuizQuestion();
+}
+
+function shuffleArr(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function generateQuizQuestions(product) {
+  const feats = product.feats || [];
+  const salesPts = getSalesPoints(product);
+  const samecat = PRODUCTS.filter(p => p.cat === product.cat && p.id !== product.id);
+  const allOtherProducts = PRODUCTS.filter(p => p.id !== product.id);
+  const pool = [];
+
+  // Q1: 廣告標語配對
+  if (product.tagline && samecat.length >= 3) {
+    const wrongs = shuffleArr(samecat).slice(0,3).map(p => p.name);
+    pool.push({q:`「${product.tagline}」是哪款產品的廣告標語？`,
+               ans:product.name, opts:shuffleArr([product.name,...wrongs])});
+  }
+
+  // Q2: 哪個「是」此產品的特色功能？
+  if (feats.length >= 1) {
+    const correctFeat = feats[Math.floor(Math.random()*feats.length)];
+    const allOtherFeats = allOtherProducts.flatMap(p=>p.feats||[]).filter(f=>!feats.includes(f));
+    if (allOtherFeats.length >= 3) {
+      const wrongs = shuffleArr(allOtherFeats).slice(0,3);
+      pool.push({q:`下列哪項「是」${product.name} 的功能特色？`,
+                 ans:correctFeat, opts:shuffleArr([correctFeat,...wrongs])});
+    }
+  }
+
+  // Q3: 哪個「不是」此產品的特色功能？
+  if (feats.length >= 3) {
+    const decoys = allOtherProducts.flatMap(p=>p.feats||[]).filter(f=>!feats.includes(f));
+    if (decoys.length >= 1) {
+      const decoy = shuffleArr(decoys)[0];
+      const correctOpts = shuffleArr(feats).slice(0,3);
+      pool.push({q:`下列哪項「不是」${product.name} 的功能？`,
+                 ans:decoy, opts:shuffleArr([...correctOpts,decoy])});
+    }
+  }
+
+  // Q4: 銷售特色配對
+  if (salesPts.length >= 1) {
+    const sp = salesPts[0];
+    const otherSp = allOtherProducts.flatMap(p=>getSalesPoints(p)).filter(s=>s!==sp);
+    if (otherSp.length >= 3) {
+      pool.push({q:`下列哪個描述符合 ${product.name} 的銷售重點？`,
+                 ans:sp, opts:shuffleArr([sp,...shuffleArr(otherSp).slice(0,3)])});
+    }
+  }
+
+  // Q5: 產品分類
+  const otherCats = [...new Set(PRODUCTS.filter(p=>p.id!==product.id).map(p=>p.cat))].filter(c=>c!==product.cat);
+  if (otherCats.length >= 3) {
+    pool.push({q:`${product.name} 屬於 Apple 哪個產品系列？`,
+               ans:product.cat, opts:shuffleArr([product.cat,...otherCats.slice(0,3)])});
+  }
+
+  // Q6: 售價（非規格，是市場定位題）
+  if (product.price && !product.price.includes('已停售') && !product.price.includes('預計')) {
+    const others = [...new Set(samecat.filter(p=>p.price&&!p.price.includes('已停售')&&!p.price.includes('預計')).map(p=>p.price))].filter(v=>v!==product.price);
+    if (others.length >= 3) {
+      pool.push({q:`${product.name} 的台灣建議售價是？`,
+                 ans:product.price, opts:shuffleArr([product.price,...shuffleArr(others).slice(0,3)])});
+    }
+  }
+
+  // Q7: 產品描述配對
+  if (product.desc && samecat.length >= 3) {
+    // Use a short excerpt of desc as the question
+    const shortDesc = product.desc.slice(0,30) + '…';
+    const wrongNames = shuffleArr(samecat).slice(0,3).map(p=>p.name);
+    pool.push({q:`「${shortDesc}」描述的是哪款產品？`,
+               ans:product.name, opts:shuffleArr([product.name,...wrongNames])});
+  }
+
+  // Q8: 另一個功能題 (第二個 feat)
+  if (feats.length >= 2) {
+    const feat2 = feats[1];
+    const allOtherFeats2 = allOtherProducts.flatMap(p=>p.feats||[]).filter(f=>!feats.includes(f));
+    if (allOtherFeats2.length >= 3) {
+      pool.push({q:`以下哪項功能是 ${product.name} 獨有或主打的特色？`,
+                 ans:feat2, opts:shuffleArr([feat2,...shuffleArr(allOtherFeats2).slice(0,3)])});
+    }
+  }
+
+  return shuffleArr(pool).slice(0,5);
+}
+
+function renderQuizQuestion() {
+  const area = document.getElementById('quiz-area');
+  const {questions, current} = quizState;
+  if (!questions.length) {
+    area.innerHTML = '<div class="empty"><div class="empty-icon">❓</div><p>題目不足，請選擇規格較完整的產品</p></div>';
+    return;
+  }
+  if (current >= questions.length) { renderQuizResult(); return; }
+  const q = questions[current];
+  const pct = (current / questions.length) * 100;
+  area.innerHTML = `
+    <div class="quiz-progress">
+      <div class="quiz-prog-bar"><div class="quiz-prog-fill" style="width:${pct}%"></div></div>
+      <span class="quiz-prog-text">第 ${current+1} / ${questions.length} 題</span>
+    </div>
+    <div class="quiz-card">
+      <div class="quiz-question">${q.q}</div>
+      <div class="quiz-options" id="qopts">
+        ${q.opts.map((opt,i) => `<button class="quiz-option" onclick="answerQuiz(${i})">
+          <span class="quiz-opt-letter">${'ABCD'[i]}</span>
+          <span class="quiz-opt-text">${opt}</span>
+        </button>`).join('')}
+      </div>
+    </div>
+    <div id="quiz-feedback"></div>`;
+}
+
+function answerQuiz(idx) {
+  const q = quizState.questions[quizState.current];
+  const btns = document.querySelectorAll('.quiz-option');
+  const chosen = btns[idx]?.querySelector('.quiz-opt-text')?.textContent || '';
+  const isCorrect = chosen === q.ans;
+  if (isCorrect) quizState.score++;
+  quizState.answered.push({q:q.q, chosen, correct:isCorrect, ans:q.ans});
+  btns.forEach(btn => {
+    btn.disabled = true;
+    const t = btn.querySelector('.quiz-opt-text')?.textContent;
+    if (t === q.ans) btn.classList.add('correct');
+    else if (btn === btns[idx] && !isCorrect) btn.classList.add('wrong');
+  });
+  const fb = document.getElementById('quiz-feedback');
+  fb.innerHTML = `
+    <div class="quiz-fb-msg ${isCorrect?'correct':'wrong'}">
+      ${isCorrect ? '✅ 答對了！' : `❌ 答錯了！正確答案是：<strong>${q.ans}</strong>`}
+    </div>
+    <button class="quiz-next-btn" onclick="quizNext()">
+      ${quizState.current+1 >= quizState.questions.length ? '查看結果 🎯' : '下一題 →'}
+    </button>`;
+}
+
+function quizNext() {
+  quizState.current++;
+  renderQuizQuestion();
+}
+
+function renderQuizResult() {
+  const {questions, score, answered} = quizState;
+  const pct = Math.round((score/questions.length)*100);
+  const grade = pct>=80 ? '🏆 太棒了！' : pct>=60 ? '👍 不錯！' : '💪 繼續加油！';
+  const area = document.getElementById('quiz-area');
+  area.innerHTML = `
+    <div class="quiz-result-card">
+      <div class="quiz-result-score">${score} / ${questions.length}</div>
+      <div class="quiz-result-sub">答對率 ${pct}%</div>
+      <div class="quiz-result-grade">${grade}</div>
+    </div>
+    ${answered.map((a,i) => `
+      <div class="quiz-review-item ${a.correct?'correct':'wrong'}">
+        <div class="quiz-review-q">${i+1}. ${a.q}</div>
+        <div class="quiz-review-a">您的答案：${a.chosen} ${a.correct?'✅':'❌'}</div>
+        ${!a.correct ? `<div class="quiz-review-correct">✅ 正確答案：${a.ans}</div>` : ''}
+      </div>`).join('')}
+    <button class="quiz-retry-btn" onclick="startQuiz()">再試一次 🔄</button>`;
+}
+
+/* ─── INIT ─── */
+buildProdSelector();
+renderFeats();
+buildTroubleCats();
+renderTrouble();
+buildCmpCats();
+renderCmpPicker();
+populateCmpSelects();
+initQuizSelect();
+fetchGoogleSheetSales();
+</script>
+</body>
+</html>
